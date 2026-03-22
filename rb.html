@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red-Black Tree Visualizer</title>
+    <style>
+        body { font-family: sans-serif; background: #0f0524; color: #fff; display: flex; flex-direction: column; align-items: center; margin: 0; }
+        .controls { background: #1a0533; padding: 20px; width: 100%; display: flex; justify-content: center; gap: 10px; border-bottom: 2px solid #331a5e; }
+        input { padding: 8px; border-radius: 4px; border: none; width: 60px; }
+        button { padding: 8px 15px; cursor: pointer; border-radius: 4px; border: none; background: #6c5ce7; color: white; font-weight: bold; }
+        button:hover { background: #a29bfe; }
+        
+        #lrbt-svg { background: #0d0020; width: 100%; height: 500px; margin-top: 10px; }
+        .explanation-box { padding: 15px; background: #1a0533; border: 1px solid #331a5e; width: 80%; margin: 10px; min-height: 60px; border-radius: 8px; }
+        .hl-red { color: #ff6b6b; font-weight: bold; }
+        .hl-green { color: #2ecc71; font-weight: bold; }
+        .hl-yellow { color: #f1c40f; font-weight: bold; }
+        
+        #lrbt-log { font-family: monospace; font-size: 12px; background: #000; width: 80%; height: 100px; overflow-y: auto; padding: 10px; border-radius: 8px; }
+    </style>
+</head>
+<body onload="lrbtInit()">
+
+    <button onclick="window.location.href='../index.html'" style="background:red; color:white; padding:10px;">
+   ⬅ Back to Main Menu
+</button>
+
+    <div class="controls">
+        <input type="number" id="lrbt-val" placeholder="Val">
+        <button onclick="lrbtInsert()">Insert</button>
+        <button onclick="lrbtSearch()">Search</button>
+        <button onclick="lrbtDelete()">Delete</button>
+        <button onclick="lrbtRandom()">Random x8</button>
+        <button onclick="lrbtReset()" style="background:#d63031">Reset</button>
+        <div id="lrbt-stats" style="margin-left:20px; align-self:center">Nodes: 0 | Height: 0</div>
+    </div>
+
+    <div class="explanation-box" id="lrbt-explain">Welcome! Enter a number to start.</div>
+
+    <svg id="lrbt-svg">
+        <defs>
+            <filter id="lrbt-g"><feGaussianBlur stdDeviation="3" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
+            <filter id="lrbt-y"><feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#f1c40f"/></filter>
+        </defs>
+        <g id="lrbt-edges"></g>
+        <g id="lrbt-nodes"></g>
+    </svg>
+
+    <div id="lrbt-log"></div>
+
+    <script>
+        const LRED = 0, LBLK = 1;
+        class LRBTNode {
+            constructor(v) {
+                this.v = v; this.c = LRED; this.l = null; this.r = null;
+                this.p = null; this.nil = false; this.x = 0; this.y = 0;
+            }
+        }
+
+        let lrbtRoot = null, lrbtNIL = null, lrbtRunning = false, lrbtSize = 0;
+
+        function lSleep(ms) { return new Promise(resolve => setTimeout(resolve, 600)); }
+
+        function explain(id, msg) { document.getElementById('lrbt-explain').innerHTML = msg; }
+
+        function llog(id, msg, type) {
+            const log = document.getElementById('lrbt-log');
+            log.innerHTML += `<div>> ${msg}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function lrbtInit() {
+            lrbtNIL = { v: null, c: LBLK, l: null, r: null, p: null, nil: true, x: 0, y: 0 };
+            lrbtNIL.p = lrbtNIL; lrbtNIL.l = lrbtNIL; lrbtNIL.r = lrbtNIL;
+            lrbtRoot = lrbtNIL;
+            lrbtSize = 0;
+            lrbtDraw();
+        }
+
+        function lrbtReset() {
+            if (lrbtRunning) return;
+            lrbtInit();
+            document.getElementById('lrbt-log').innerHTML = '';
+            document.getElementById('lrbt-stats').textContent = 'Nodes: 0 | Height: 0';
+            explain('rbt', 'Tree reset.');
+        }
+
+        async function lrbtInsert() {
+            const inp = document.getElementById('lrbt-val');
+            const v = parseInt(inp.value);
+            if (isNaN(v)) return;
+            inp.value = '';
+            await lrbtInsertVal(v);
+        }
+
+        async function lrbtInsertVal(val) {
+            if (lrbtRunning) return; lrbtRunning = true;
+            
+            let y = lrbtNIL, x = lrbtRoot;
+            while (!x.nil) {
+                y = x;
+                if (val < x.v) x = x.l;
+                else if (val > x.v) x = x.r;
+                else { explain('rbt', 'Duplicate value!'); lrbtRunning = false; return; }
+            }
+
+            const z = new LRBTNode(val);
+            z.p = y; z.l = lrbtNIL; z.r = lrbtNIL;
+            if (y.nil) lrbtRoot = z;
+            else if (val < y.v) y.l = z;
+            else y.r = z;
+
+            lrbtSize++;
+            lrbtDrawHL(z, 'new');
+            await lSleep(600);
+            await lrbtInsertFix(z);
+            
+            lrbtRunning = false;
+            updateStats();
+            lrbtDraw();
+        }
+
+        async function lrbtInsertFix(z) {
+            while (z.p.c === LRED) {
+                if (z.p === z.p.p.l) {
+                    let uncle = z.p.p.r;
+                    if (uncle.c === LRED) { // Case 1
+                        z.p.c = LBLK; uncle.c = LBLK; z.p.p.c = LRED;
+                        z = z.p.p;
+                    } else {
+                        if (z === z.p.r) { // Case 2
+                            z = z.p; lrbtRotL(z);
+                        }
+                        z.p.c = LBLK; z.p.p.c = LRED; // Case 3
+                        lrbtRotR(z.p.p);
+                    }
+                } else {
+                    let uncle = z.p.p.l;
+                    if (uncle.c === LRED) {
+                        z.p.c = LBLK; uncle.c = LBLK; z.p.p.c = LRED;
+                        z = z.p.p;
+                    } else {
+                        if (z === z.p.l) {
+                            z = z.p; lrbtRotR(z);
+                        }
+                        z.p.c = LBLK; z.p.p.c = LRED;
+                        lrbtRotL(z.p.p);
+                    }
+                }
+                lrbtDraw(); await lSleep(600);
+            }
+            lrbtRoot.c = LBLK;
+        }
+
+        function lrbtRotL(x) {
+            const y = x.r; x.r = y.l;
+            if (!y.l.nil) y.l.p = x;
+            y.p = x.p;
+            if (x.p.nil) lrbtRoot = y;
+            else if (x === x.p.l) x.p.l = y;
+            else x.p.r = y;
+            y.l = x; x.p = y;
+        }
+
+        function lrbtRotR(x) {
+            const y = x.l; x.l = y.r;
+            if (!y.r.nil) y.r.p = x;
+            y.p = x.p;
+            if (x.p.nil) lrbtRoot = y;
+            else if (x === x.p.r) x.p.r = y;
+            else x.p.l = y;
+            y.r = x; x.p = y;
+        }
+
+        function updateStats() {
+            const h = lrbtHeight(lrbtRoot);
+            document.getElementById('lrbt-stats').textContent = `Nodes: ${lrbtSize} | Height: ${h}`;
+        }
+
+        function lrbtHeight(n) { if (!n || n.nil) return 0; return 1 + Math.max(lrbtHeight(n.l), lrbtHeight(n.r)); }
+
+        // Drawing Logic
+        function lrbtAssignPos(n, x, y, sp, lh) {
+            if (!n || n.nil) return; n.x = x; n.y = y;
+            lrbtAssignPos(n.l, x - sp, y + lh, sp * 0.5, lh);
+            lrbtAssignPos(n.r, x + sp, y + lh, sp * 0.5, lh);
+        }
+
+        function lrbtDrawHL(hlNode = null, hlType = null) {
+            const svg = document.getElementById('lrbt-svg');
+            const nodesG = document.getElementById('lrbt-nodes');
+            const edgesG = document.getElementById('lrbt-edges');
+            nodesG.innerHTML = ''; edgesG.innerHTML = '';
+            if (lrbtRoot.nil) return;
+
+            const W = svg.clientWidth, H = svg.clientHeight;
+            lrbtAssignPos(lrbtRoot, W / 2, 40, W / 4, 60);
+
+            const drawTree = (n) => {
+                if (n.nil) return;
+                if (!n.l.nil) {
+                    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    l.setAttribute('x1', n.x); l.setAttribute('y1', n.y);
+                    l.setAttribute('x2', n.l.x); l.setAttribute('y2', n.l.y);
+                    l.setAttribute('stroke', '#444'); edgesG.appendChild(l);
+                    drawTree(n.l);
+                }
+                if (!n.r.nil) {
+                    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    l.setAttribute('x1', n.x); l.setAttribute('y1', n.y);
+                    l.setAttribute('x2', n.r.x); l.setAttribute('y2', n.r.y);
+                    l.setAttribute('stroke', '#444'); edgesG.appendChild(l);
+                    drawTree(n.r);
+                }
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                c.setAttribute('cx', n.x); c.setAttribute('cy', n.y); c.setAttribute('r', '18');
+                c.setAttribute('fill', n.c === LRED ? '#e74c3c' : '#2c3e50');
+                c.setAttribute('stroke', hlNode === n ? '#f1c40f' : '#fff');
+                c.setAttribute('stroke-width', hlNode === n ? '4' : '2');
+                
+                const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                t.setAttribute('x', n.x); t.setAttribute('y', n.y + 5);
+                t.setAttribute('text-anchor', 'middle'); t.setAttribute('fill', '#fff');
+                t.textContent = n.v;
+                g.appendChild(c); g.appendChild(t); nodesG.appendChild(g);
+            };
+            drawTree(lrbtRoot);
+        }
+
+        function lrbtDraw() { lrbtDrawHL(); }
+
+        async function lrbtRandom() {
+            for(let i=0; i<8; i++) {
+                await lrbtInsertVal(Math.floor(Math.random()*99)+1);
+                await lSleep(200);
+            }
+        }
+    </script>
+</body>
+</html>
