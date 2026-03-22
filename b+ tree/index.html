@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>B+ Tree Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<button onclick="window.location.href='../index.html'" style="background:red; color:white; padding:10px;">
+   ⬅ Back to Main Menu
+</button>
+<div class="container">
+    <div class="sidebar">
+        <h2>B+ Tree Visualizer</h2>
+
+        <label>Order (m):</label>
+        <select id="orderSelect">
+            <option value="3">3</option>
+            <option value="4" selected>4</option>
+            <option value="5">5</option>
+        </select>
+
+        <input type="number" id="valueInput" placeholder="Enter value">
+        <button id="insertBtn">Insert</button>
+        <button id="undoBtn">Undo</button>
+        <button id="resetBtn">Reset</button>
+        
+        <div id="logic-monitor" style="margin-top: 30px; padding: 12px; background: #1a252f; border-left: 4px solid #27ae60; border-radius: 4px;">
+            <p style="color: #aaa; font-size: 10px; margin: 0 0 5px 0; font-family: 'Segoe UI', Tahoma, sans-serif; letter-spacing: 1px;">LOGIC TRACE</p>
+            <div id="step-desc" style="color: #fff; font-size: 13px; font-family: 'Segoe UI', sans-serif; line-height: 1.4; font-style: italic;">
+                "Awaiting input to begin analysis..."
+            </div>
+        </div>
+
+        <div class="log" id="log"></div>
+    </div> <div class="canvas-container">
+        <svg id="treeCanvas"></svg>
+    </div>
+</div>
+
+<script type="module" src="main.js"></script>
+
+</body>
+</html>

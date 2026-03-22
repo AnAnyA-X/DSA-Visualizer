@@ -1,0 +1,51 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 280px;
+    background: #2c3e50;
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar input,
+.sidebar select,
+.sidebar button {
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+}
+
+.sidebar button {
+    cursor: pointer;
+}
+
+.canvas-container {
+    flex: 1;
+    background: #f4f6f8;
+    position: relative;
+}
+
+#treeCanvas {
+    width: 100%;
+    height: 100%;
+}
+
+.log {
+    margin-top: 15px;
+    font-size: 14px;
+    max-height: 200px;
+    overflow-y: auto;
+}
