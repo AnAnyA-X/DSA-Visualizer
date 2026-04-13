@@ -1,0 +1,3762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Quest 🎮</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   ROOT + RESET
+═══════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sky:#1a0533;--sky2:#2d0a5e;
+  --ground:#4a2800;--ground2:#6b3c00;
+  --brick:#c0392b;--brick2:#e74c3c;
+  --coin:#f1c40f;--coin2:#f39c12;
+  --green:#27ae60;--green2:#2ecc71;
+  --blue:#2980b9;--blue2:#3498db;
+  --purple:#8e44ad;--purple2:#9b59b6;
+  --red:#e74c3c;--red2:#ff6b6b;
+  --white:#ecf0f1;--dim:#bdc3c7;--dark:#1a0533;
+  --pixel:2px;
+  --font:'Press Start 2P',monospace;
+  --body:'Nunito',sans-serif;
+}
+html,body{height:100%;overflow-x:hidden}
+body{font-family:var(--body);background:var(--sky);color:var(--white);min-height:100vh}
+button{font-family:var(--body);cursor:pointer}
+input{font-family:var(--body)}
+ 
+/* ═══════════════════════════════════════
+   PIXEL STAR BACKGROUND
+═══════════════════════════════════════ */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 10%, rgba(255,255,255,.9) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 30%, rgba(255,255,255,.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 55%, rgba(255,255,255,.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 20%, rgba(255,255,255,.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 92% 70%, rgba(255,255,255,.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 75%, rgba(255,255,255,.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 85%, rgba(255,255,255,.5) 0%, transparent 100%),
+    radial-gradient(2px 2px at 35% 60%, rgba(241,196,15,.9) 0%, transparent 100%),
+    radial-gradient(2px 2px at 70% 45%, rgba(241,196,15,.8) 0%, transparent 100%);
+  animation:twinkle 4s ease-in-out infinite alternate;
+}
+@keyframes twinkle{0%{opacity:.7}100%{opacity:1}}
+ 
+/* ═══════════════════════════════════════
+   PAGE SYSTEM
+═══════════════════════════════════════ */
+.page{display:none;flex-direction:column;min-height:100vh;position:relative;z-index:1}
+.page.active{display:flex}
+ 
+/* ═══════════════════════════════════════
+   PIXEL HELPERS
+═══════════════════════════════════════ */
+.pixel-border{
+  image-rendering:pixelated;
+  border:4px solid;
+  box-shadow:4px 4px 0 rgba(0,0,0,.5);
+}
+.pixel-btn{
+  font-family:var(--font);font-size:10px;
+  border:3px solid rgba(0,0,0,.4);
+  box-shadow:3px 3px 0 rgba(0,0,0,.4);
+  padding:10px 20px;cursor:pointer;
+  transition:transform .1s,box-shadow .1s;
+  text-transform:uppercase;letter-spacing:1px;
+  display:inline-block;
+}
+.pixel-btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(0,0,0,.4)}
+.pixel-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.4)}
+.btn-gold{background:var(--coin);color:var(--dark);border-color:var(--coin2)}
+.btn-green{background:var(--green);color:white;border-color:#1e8449}
+.btn-blue{background:var(--blue);color:white;border-color:#1f618d}
+.btn-red{background:var(--red);color:white;border-color:#c0392b}
+.btn-purple{background:var(--purple);color:white;border-color:#6c3483}
+.btn-gray{background:#7f8c8d;color:white;border-color:#5d6d7e}
+ 
+/* ═══════════════════════════════════════
+   FLOATING CLOUDS
+═══════════════════════════════════════ */
+.clouds{position:fixed;top:0;left:0;width:100%;height:200px;pointer-events:none;z-index:0;overflow:hidden}
+.cloud{position:absolute;background:rgba(255,255,255,.12);border-radius:50px;animation:cloudMove linear infinite}
+@keyframes cloudMove{from{transform:translateX(-200px)}to{transform:translateX(110vw)}}
+ 
+/* ground strip removed */
+ 
+/* ═══════════════════════════════════════
+   FLOATING COINS  (decorative)
+═══════════════════════════════════════ */
+.fcoin{
+  position:fixed;font-size:1.2rem;pointer-events:none;z-index:2;
+  animation:coinFloat 3s ease-in-out infinite;
+}
+@keyframes coinFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+ 
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+#toast{
+  position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);
+  background:var(--coin);color:var(--dark);
+  font-family:var(--font);font-size:9px;
+  padding:10px 20px;border:3px solid var(--coin2);
+  box-shadow:4px 4px 0 rgba(0,0,0,.5);
+  z-index:999;transition:transform .3s cubic-bezier(.16,1,.3,1);
+  white-space:nowrap;
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+ 
+/* ═══════════════════════════════════════
+   CONFETTI
+═══════════════════════════════════════ */
+.cf-bit{position:fixed;pointer-events:none;z-index:998;
+  animation:cffall var(--dur,2s) ease-in forwards}
+@keyframes cffall{
+  0%{transform:translateY(-10px) rotate(0);opacity:1}
+  100%{transform:translateY(105vh) rotate(720deg);opacity:0}
+}
+ 
+/* ═══════════════════════════════════════
+   AUTH PAGE  — Mario-style
+═══════════════════════════════════════ */
+#auth-page{
+  align-items:center;justify-content:center;
+  padding:20px 20px 60px;
+  min-height:100vh;
+}
+ 
+/* Big pixel game title */
+.game-title-wrap{text-align:center;margin-bottom:32px;position:relative}
+.game-title{
+  font-family:var(--font);font-size:clamp(1.4rem,4vw,2.4rem);
+  color:var(--coin);
+  text-shadow:4px 4px 0 var(--coin2),8px 8px 0 rgba(0,0,0,.5);
+  display:block;line-height:1.4;letter-spacing:2px;
+  animation:titleBounce 2s ease-in-out infinite;
+}
+@keyframes titleBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.game-subtitle{
+  font-family:var(--font);font-size:9px;color:var(--white);
+  margin-top:10px;display:block;letter-spacing:1px;opacity:.8;
+}
+ 
+/* Character picker */
+.char-pick-title{font-family:var(--font);font-size:9px;color:var(--coin);text-align:center;margin-bottom:12px;letter-spacing:1px}
+.char-row{display:flex;gap:14px;justify-content:center;margin-bottom:24px;flex-wrap:wrap}
+.char-card{
+  background:rgba(255,255,255,.06);
+  border:3px solid rgba(255,255,255,.15);
+  border-radius:0;
+  padding:14px 16px;width:110px;text-align:center;cursor:pointer;
+  transition:all .15s;position:relative;
+  box-shadow:3px 3px 0 rgba(0,0,0,.4);
+}
+.char-card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 rgba(0,0,0,.4)}
+.char-card.selected{
+  border-color:var(--coin);background:rgba(241,196,15,.15);
+  transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--coin2);
+}
+.char-card.selected::after{
+  content:'★';position:absolute;top:-12px;right:-8px;
+  font-size:1.2rem;color:var(--coin);
+  text-shadow:2px 2px 0 var(--coin2);
+}
+.char-emoji{font-size:2.8rem;display:block;margin-bottom:8px;animation:charHop 1.8s ease-in-out infinite}
+.char-card:nth-child(2) .char-emoji{animation-delay:.3s}
+.char-card:nth-child(3) .char-emoji{animation-delay:.6s}
+@keyframes charHop{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.char-name{font-family:var(--font);font-size:7px;color:var(--white);display:block;margin-bottom:3px}
+.char-role{font-size:.68rem;color:var(--dim);font-weight:600}
+ 
+/* Auth panel */
+.auth-panel{
+  width:100%;max-width:400px;
+  background:rgba(10,5,30,.88);
+  border:4px solid rgba(255,255,255,.2);
+  box-shadow:6px 6px 0 rgba(0,0,0,.6),0 0 40px rgba(155,89,182,.2);
+  padding:28px 26px 24px;
+}
+.auth-panel-title{
+  font-family:var(--font);font-size:11px;color:var(--coin);
+  text-align:center;margin-bottom:4px;
+  text-shadow:2px 2px 0 var(--coin2);
+}
+.auth-panel-sub{text-align:center;color:var(--dim);font-size:.8rem;font-weight:600;margin-bottom:18px}
+ 
+/* tab row */
+.auth-tabs{display:flex;gap:0;margin-bottom:20px;border:3px solid rgba(255,255,255,.15)}
+.auth-tab{
+  flex:1;padding:10px;border:none;background:transparent;
+  font-family:var(--font);font-size:8px;color:var(--dim);
+  cursor:pointer;transition:all .2s;letter-spacing:.5px;
+}
+.auth-tab.on{background:var(--purple);color:var(--white);text-shadow:1px 1px 0 rgba(0,0,0,.4)}
+ 
+/* form fields */
+.fg{margin-bottom:14px}
+.fg label{display:block;font-family:var(--font);font-size:7px;color:var(--coin);margin-bottom:6px;letter-spacing:.5px}
+.fg input{
+  width:100%;padding:11px 14px;
+  background:rgba(255,255,255,.06);
+  border:3px solid rgba(255,255,255,.18);
+  color:var(--white);font-size:.9rem;font-weight:700;outline:none;
+  transition:border-color .2s;
+  border-radius:0;
+}
+.fg input:focus{border-color:var(--coin)}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:44px}
+.eye-btn{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  border:none;background:transparent;color:var(--dim);cursor:pointer;
+  padding:4px;display:flex;align-items:center;transition:color .2s;
+}
+.eye-btn:hover{color:var(--coin)}
+.eye-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+ 
+/* auth button */
+.btn-auth{
+  width:100%;padding:13px;border:none;
+  background:var(--green);
+  color:white;font-family:var(--font);font-weight:700;font-size:10px;
+  border:3px solid #1e8449;box-shadow:4px 4px 0 rgba(0,0,0,.4);
+  transition:all .15s;letter-spacing:1px;cursor:pointer;margin-top:4px;
+}
+.btn-auth:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 rgba(0,0,0,.4)}
+.btn-auth:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.4)}
+ 
+.auth-msg{padding:9px 13px;font-family:var(--font);font-size:7px;
+  margin-bottom:12px;display:none;letter-spacing:.5px}
+.auth-msg.err{background:rgba(231,76,60,.2);border:2px solid var(--red);color:#ff9999}
+.auth-msg.ok{background:rgba(39,174,96,.15);border:2px solid var(--green);color:#aaffcc}
+.demo-row{text-align:center;margin-top:12px;font-size:.76rem;color:var(--dim);font-weight:600}
+.demo-link{
+  color:var(--coin);cursor:pointer;border-bottom:2px dashed var(--coin2);
+  padding:0 4px;font-weight:700;transition:color .2s;
+}
+.demo-link:hover{color:var(--white)}
+ 
+/* ═══════════════════════════════════════
+   HOME — WORLD MAP
+═══════════════════════════════════════ */
+#home-page{padding-bottom:60px}
+ 
+.world-topbar{
+  display:flex;align-items:center;gap:14px;padding:0 22px;height:54px;
+  background:rgba(10,3,24,.92);border-bottom:3px solid rgba(255,255,255,.1);
+  position:sticky;top:0;z-index:200;
+}
+.world-topbar .t-logo{
+  font-family:var(--font);font-size:11px;color:var(--coin);
+  text-shadow:2px 2px 0 var(--coin2);white-space:nowrap;
+}
+.player-chip{display:flex;align-items:center;gap:9px}
+.player-avatar{font-size:1.5rem;width:34px;height:34px;
+  background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.18);
+  display:grid;place-items:center;}
+.player-name{font-family:var(--font);font-size:8px;color:var(--white)}
+.player-lvl{font-size:.68rem;color:var(--dim);font-weight:700}
+ 
+.stat-pill{display:flex;align-items:center;gap:5px;padding:5px 11px;
+  background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.12);
+  font-family:var(--font);font-size:8px}
+.stat-pill .sv{color:var(--coin)}
+ 
+/* XP bar in topbar */
+.xp-mini{display:flex;align-items:center;gap:6px;min-width:120px}
+.xp-bar-wrap{flex:1;height:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--purple2),var(--coin));transition:width .6s}
+.xp-txt{font-family:var(--font);font-size:6px;color:var(--dim);white-space:nowrap}
+ 
+/* World map hero section */
+.world-hero{
+  text-align:center;padding:36px 20px 24px;
+  background:linear-gradient(180deg,transparent,rgba(45,10,94,.4));
+}
+.world-hero h1{
+  font-family:var(--font);font-size:clamp(1.1rem,3vw,1.8rem);
+  color:var(--coin);text-shadow:3px 3px 0 var(--coin2),5px 5px 0 rgba(0,0,0,.4);
+  margin-bottom:10px;line-height:1.5;
+}
+.world-hero p{font-size:.9rem;color:var(--dim);max-width:500px;margin:0 auto;font-weight:600}
+ 
+/* World stats row */
+.world-stats{
+  display:flex;gap:0;background:rgba(0,0,0,.3);
+  border-top:2px solid rgba(255,255,255,.08);
+  border-bottom:2px solid rgba(255,255,255,.08);
+}
+.wstat{flex:1;padding:11px 8px;text-align:center;border-right:1px solid rgba(255,255,255,.06)}
+.wstat:last-child{border-right:none}
+.wstat-val{font-family:var(--font);font-size:1.2rem}
+.wstat-lbl{font-family:var(--font);font-size:6px;color:var(--dim);margin-top:3px;letter-spacing:.5px}
+ 
+/* Quest cards — world map style */
+.quests-area{padding:28px 20px 20px;max-width:900px;margin:0 auto;width:100%}
+.quests-label{font-family:var(--font);font-size:9px;color:var(--dim);
+  text-align:center;margin-bottom:20px;letter-spacing:1px}
+ 
+.quest-card{
+  background:rgba(10,5,30,.85);
+  border:4px solid rgba(255,255,255,.12);
+  box-shadow:5px 5px 0 rgba(0,0,0,.5);
+  margin-bottom:20px;cursor:pointer;
+  transition:transform .15s,box-shadow .15s,border-color .15s;
+  position:relative;overflow:hidden;
+}
+.quest-card:hover{transform:translate(-3px,-3px);box-shadow:8px 8px 0 rgba(0,0,0,.5)}
+.quest-card.qc-rbt{border-color:rgba(231,76,60,.5)}
+.quest-card.qc-rbt:hover{border-color:var(--red2);box-shadow:8px 8px 0 rgba(231,76,60,.3)}
+.quest-card.qc-trie{border-color:rgba(52,152,219,.5)}
+.quest-card.qc-trie:hover{border-color:var(--blue2);box-shadow:8px 8px 0 rgba(52,152,219,.3)}
+.quest-card.qc-graph{border-color:rgba(39,174,96,.5)}
+.quest-card.qc-graph:hover{border-color:var(--green2);box-shadow:8px 8px 0 rgba(39,174,96,.3)}
+.quest-card.locked{opacity:.5;cursor:not-allowed}
+.quest-card.locked:hover{transform:none;box-shadow:5px 5px 0 rgba(0,0,0,.5)}
+ 
+.qc-banner{padding:20px 22px;display:flex;align-items:center;gap:18px;
+  border-bottom:2px solid rgba(255,255,255,.07);position:relative}
+.qc-banner::before{content:'';position:absolute;inset:0;opacity:.04;pointer-events:none}
+.qc-rbt .qc-banner::before{background:var(--red)}
+.qc-trie .qc-banner::before{background:var(--blue)}
+.qc-graph .qc-banner::before{background:var(--green)}
+ 
+.qc-icon{font-size:3rem;flex-shrink:0}
+.qc-name{font-family:var(--font);font-size:14px;margin-bottom:5px}
+.qc-rbt .qc-name{color:var(--red2)}
+.qc-trie .qc-name{color:var(--blue2)}
+.qc-graph .qc-name{color:var(--green2)}
+.qc-desc{font-size:.85rem;color:var(--dim);line-height:1.6;font-weight:600;max-width:500px}
+.qc-meta{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+.qc-xp{font-family:var(--font);font-size:8px;padding:4px 12px;
+  border:2px solid;color:var(--coin);border-color:var(--coin2);
+  background:rgba(241,196,15,.1);}
+.qc-lock{font-family:var(--font);font-size:7px;color:var(--dim);
+  padding:4px 10px;border:2px solid rgba(255,255,255,.15)}
+.qc-stars{font-size:1.1rem;letter-spacing:2px}
+ 
+/* mission chips */
+.qc-missions{padding:12px 18px;display:flex;gap:8px;flex-wrap:wrap}
+.mc{display:flex;align-items:center;gap:6px;padding:5px 12px;
+  background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.1);
+  font-family:var(--font);font-size:6.5px;letter-spacing:.3px}
+.mc .mcd{width:7px;height:7px;flex-shrink:0;background:rgba(255,255,255,.2)}
+.mc.done .mcd{background:var(--green2);box-shadow:0 0 6px var(--green)}
+.mc.done{border-color:rgba(39,174,96,.3);color:var(--green2)}
+ 
+/* badge wall */
+.badge-wall{padding:0 20px 32px;max-width:900px;margin:0 auto;width:100%}
+.bw-title{font-family:var(--font);font-size:8px;color:var(--dim);
+  margin-bottom:12px;letter-spacing:.8px}
+.bw-grid{display:flex;flex-wrap:wrap;gap:7px}
+.bw-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;
+  border:2px solid;font-family:var(--font);font-size:6px;
+  transition:all .2s;letter-spacing:.3px}
+.bw-chip.earned{border-color:rgba(241,196,15,.4);color:var(--coin);background:rgba(241,196,15,.06)}
+.bw-chip.earned:hover{background:rgba(241,196,15,.14);transform:translate(-1px,-1px)}
+.bw-chip.locked{border-color:rgba(255,255,255,.06);color:rgba(255,255,255,.2);filter:grayscale(1)}
+ 
+/* ═══════════════════════════════════════
+   GAME TOPBAR (in-game)
+═══════════════════════════════════════ */
+.game-topbar{
+  display:flex;align-items:center;gap:12px;padding:0 18px;height:52px;
+  background:rgba(10,3,24,.95);border-bottom:3px solid rgba(255,255,255,.1);
+  position:sticky;top:0;z-index:200;flex-wrap:wrap;
+}
+.game-score{display:flex;align-items:center;gap:10px}
+.gscore-item{font-family:var(--font);font-size:8px;display:flex;align-items:center;gap:5px}
+.gscore-item .sv{color:var(--coin)}
+ 
+/* HUD game bar */
+.game-hud{
+  display:flex;align-items:center;gap:12px;padding:6px 18px;
+  background:rgba(45,10,94,.6);border-bottom:2px solid rgba(255,255,255,.08);
+  flex-wrap:wrap;
+}
+.hud-lvl{font-family:var(--font);font-size:7px;color:var(--coin);
+  padding:3px 9px;border:2px solid var(--coin2);background:rgba(241,196,15,.1)}
+.hud-xp-bar{flex:1;height:6px;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);max-width:140px;overflow:hidden}
+.hud-xp-fill{height:100%;background:linear-gradient(90deg,var(--purple2),var(--coin));transition:width .6s}
+.hud-xp-txt{font-family:var(--font);font-size:6px;color:var(--dim);white-space:nowrap}
+ 
+/* ═══════════════════════════════════════
+   PROGRESS BAR
+═══════════════════════════════════════ */
+.prog-bar{height:4px;background:rgba(255,255,255,.08);flex-shrink:0}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--purple2),var(--coin));width:0%;transition:width .4s}
+ 
+/* ═══════════════════════════════════════
+   RED-BLACK TREE GAME
+═══════════════════════════════════════ */
+#rbt-game-page{background:linear-gradient(180deg,#1a0533,#2d0a14)}
+ 
+.rbt-layout{display:grid;grid-template-columns:1fr 300px;flex:1;height:calc(100vh - 120px);overflow:hidden}
+.rbt-canvas-area{position:relative;overflow:hidden;background:rgba(0,0,0,.3)}
+.rbt-canvas-area svg{display:block;width:100%;height:100%}
+ 
+.rbt-sidebar{display:flex;flex-direction:column;overflow:hidden;
+  background:rgba(10,3,24,.92);border-left:3px solid rgba(255,255,255,.08)}
+ 
+/* Scenario info box */
+.scenario-box{padding:14px;border-bottom:2px solid rgba(255,255,255,.08);
+  background:rgba(45,10,94,.4);flex-shrink:0}
+.scenario-title{font-family:var(--font);font-size:9px;color:var(--red2);margin-bottom:6px}
+.scenario-desc{font-size:.8rem;color:var(--dim);line-height:1.6;font-weight:600}
+ 
+/* Mascot bubble */
+.mascot-zone{padding:12px;border-bottom:2px solid rgba(255,255,255,.08);
+  display:flex;gap:10px;align-items:flex-start;flex-shrink:0;background:rgba(0,0,0,.2)}
+.mascot-em{font-size:2rem;flex-shrink:0;animation:bob 2.5s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(4deg)}}
+.bubble{background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12);
+  border-radius:12px 12px 12px 2px;padding:9px 11px;font-size:.8rem;
+  line-height:1.5;color:var(--white);font-weight:500;min-height:52px}
+ 
+/* Controls */
+.controls-panel{padding:14px;border-bottom:2px solid rgba(255,255,255,.08);flex-shrink:0}
+.ctrl-title{font-family:var(--font);font-size:7px;color:var(--coin);margin-bottom:10px;letter-spacing:.5px}
+.ctrl-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+ 
+/* Step log */
+.step-log{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:5px}
+.step-log::-webkit-scrollbar{width:3px}
+.step-log::-webkit-scrollbar-thumb{background:rgba(155,89,182,.3)}
+.log-item{padding:6px 10px;font-size:.76rem;line-height:1.5;color:var(--dim);
+  border-left:3px solid transparent;background:rgba(255,255,255,.03);
+  animation:liIn .2s ease-out both}
+.log-item.hi{border-left-color:var(--coin);color:var(--white);background:rgba(241,196,15,.04)}
+.log-item.ok{border-left-color:var(--green);color:#aaffcc;background:rgba(39,174,96,.04)}
+.log-item.err{border-left-color:var(--red);color:#ffaaaa;background:rgba(231,76,60,.04)}
+@keyframes liIn{from{opacity:0;transform:translateX(6px)}to{opacity:1;transform:none}}
+ 
+/* Status bar */
+.status-bar{display:flex;align-items:center;gap:8px;padding:7px 14px;
+  background:rgba(0,0,0,.3);border-top:2px solid rgba(255,255,255,.06);
+  font-family:var(--font);font-size:7px;color:var(--dim);flex-shrink:0}
+.sdot{width:7px;height:7px;background:var(--green2);box-shadow:0 0 6px var(--green);flex-shrink:0}
+.sdot.busy{background:var(--coin);box-shadow:0 0 6px var(--coin);animation:bl .6s infinite}
+@keyframes bl{50%{opacity:.2}}
+ 
+/* RBT node styles */
+.rbt-node-red{fill:#c0392b;stroke:#ff6b6b;stroke-width:3}
+.rbt-node-blk{fill:#1a0533;stroke:rgba(155,89,182,.6);stroke-width:2}
+.rbt-node-nil{fill:#0d0020;stroke:rgba(155,89,182,.2);stroke-width:1.2;stroke-dasharray:4,3}
+.rbt-edge{stroke:rgba(155,89,182,.3);stroke-width:1.8;fill:none}
+.rbt-lbl{fill:#fff;font-family:'Press Start 2P',monospace;font-size:11px;dominant-baseline:middle;text-anchor:middle;pointer-events:none}
+.rbt-nil-lbl{fill:rgba(155,89,182,.4);font-size:7px;dominant-baseline:middle;text-anchor:middle}
+.hl-viol{stroke:var(--coin)!important;stroke-width:4.5!important;filter:drop-shadow(0 0 8px rgba(241,196,15,.7))}
+.hl-sel{stroke:var(--blue2)!important;stroke-width:4!important;filter:drop-shadow(0 0 8px rgba(52,152,219,.7))}
+.hl-ok{stroke:var(--green2)!important;stroke-width:4!important;filter:drop-shadow(0 0 8px rgba(39,174,96,.7))}
+ 
+/* ═══════════════════════════════════════
+   TRIE GAME
+═══════════════════════════════════════ */
+#trie-game-page{background:linear-gradient(180deg,#0a1628,#0d2440)}
+.trie-layout{display:grid;grid-template-columns:1fr 300px;flex:1;height:calc(100vh - 120px);overflow:hidden}
+.trie-canvas-area{position:relative;overflow:hidden;background:rgba(0,0,0,.3)}
+.trie-canvas-area svg{width:100%;height:100%}
+ 
+/* Letter tiles */
+.letter-bank{padding:14px;border-bottom:2px solid rgba(255,255,255,.08);flex-shrink:0;background:rgba(10,20,50,.4)}
+.lb-title{font-family:var(--font);font-size:7px;color:var(--blue2);margin-bottom:8px}
+.lb-tiles{display:flex;flex-wrap:wrap;gap:7px}
+.letter-tile{
+  width:38px;height:38px;display:grid;place-items:center;
+  background:var(--blue);border:3px solid #1f618d;
+  box-shadow:3px 3px 0 rgba(0,0,0,.4);
+  font-family:var(--font);font-size:13px;color:white;
+  cursor:pointer;transition:all .12s;user-select:none;
+}
+.letter-tile:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 rgba(0,0,0,.4)}
+.letter-tile:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,.4)}
+.letter-tile.used{opacity:.3;cursor:not-allowed;pointer-events:none}
+ 
+/* Word display area */
+.word-display{padding:10px 14px;background:rgba(0,0,0,.25);border-bottom:2px solid rgba(255,255,255,.08);flex-shrink:0}
+.wd-label{font-family:var(--font);font-size:6.5px;color:var(--dim);margin-bottom:6px}
+.wd-letters{display:flex;gap:5px;min-height:40px;align-items:center;flex-wrap:wrap}
+.wd-slot{
+  width:36px;height:36px;display:grid;place-items:center;
+  background:rgba(52,152,219,.15);border:2px solid rgba(52,152,219,.4);
+  font-family:var(--font);font-size:11px;color:var(--blue2);
+  cursor:pointer;transition:all .15s;
+}
+.wd-slot:hover{background:rgba(231,76,60,.15);border-color:var(--red2);color:var(--red2)}
+.wd-placeholder{font-family:var(--font);font-size:7px;color:rgba(255,255,255,.2);letter-spacing:.5px}
+ 
+/* word list */
+.word-list{padding:8px 14px;border-bottom:2px solid rgba(255,255,255,.08);flex-shrink:0}
+.wl-title{font-family:var(--font);font-size:6.5px;color:var(--dim);margin-bottom:6px}
+.wl-chips{display:flex;flex-wrap:wrap;gap:5px}
+.wl-chip{padding:3px 9px;border:2px solid rgba(52,152,219,.3);
+  font-family:var(--font);font-size:6.5px;color:var(--blue2);background:rgba(52,152,219,.06)}
+.wl-chip.done{border-color:rgba(39,174,96,.4);color:var(--green2);background:rgba(39,174,96,.06)}
+ 
+/* trie svg */
+.trie-edge{stroke:rgba(52,152,219,.3);stroke-width:1.8}
+.trie-edge.hl{stroke:var(--green2)!important;stroke-width:3!important;filter:drop-shadow(0 0 5px rgba(39,174,96,.5))}
+.trie-node-circle{fill:rgba(26,26,68,.95);stroke:rgba(52,152,219,.5);stroke-width:2}
+.trie-node-circle.eow{fill:rgba(241,196,15,.2);stroke:var(--coin);stroke-width:3}
+.trie-node-circle.hl-insert{stroke:var(--green2)!important;stroke-width:3.5!important;filter:drop-shadow(0 0 8px rgba(39,174,96,.7))}
+.trie-node-circle.hl-search{stroke:var(--coin)!important;stroke-width:3.5!important;filter:drop-shadow(0 0 8px rgba(241,196,15,.7))}
+.trie-char{fill:rgba(52,152,219,.8);font-family:'Press Start 2P',monospace;font-size:10px;dominant-baseline:middle;text-anchor:middle;pointer-events:none}
+.trie-lbl{fill:#fff;font-family:'Press Start 2P',monospace;font-size:12px;dominant-baseline:middle;text-anchor:middle;pointer-events:none}
+.eow-dot{fill:var(--coin);stroke:var(--coin2);stroke-width:1.5}
+ 
+/* ═══════════════════════════════════════
+   GRAPH GAME
+═══════════════════════════════════════ */
+#graph-game-page{background:linear-gradient(180deg,#0a2810,#0d3b18)}
+.graph-layout{display:grid;grid-template-columns:1fr 300px;flex:1;height:calc(100vh - 120px);overflow:hidden}
+.graph-canvas-area{position:relative;overflow:hidden;background:rgba(0,0,0,.3)}
+.graph-canvas-area svg{width:100%;height:100%}
+ 
+/* algo mode strip */
+.algo-strip{padding:10px 16px;background:rgba(39,174,96,.1);border-bottom:2px solid rgba(39,174,96,.2);
+  display:flex;align-items:center;gap:12px;flex-shrink:0}
+.algo-strip-name{font-family:var(--font);font-size:9px;color:var(--green2)}
+.algo-strip-desc{font-size:.78rem;color:var(--dim);font-weight:600}
+ 
+/* graph node classes */
+.gn-unvisited{fill:#0d3b18;stroke:rgba(39,174,96,.5);stroke-width:2.5}
+.gn-start{fill:#0b5394;stroke:var(--blue2);stroke-width:3}
+.gn-queue{fill:#6c3483;stroke:var(--purple2);stroke-width:3}
+.gn-visiting{fill:#7d6608;stroke:var(--coin);stroke-width:3}
+.gn-visited{fill:#145a32;stroke:var(--green2);stroke-width:3}
+.gn-wrong{fill:#7b241c;stroke:var(--red2);stroke-width:3;animation:wrongShake .3s ease both}
+@keyframes wrongShake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.ge-normal{stroke:rgba(39,174,96,.2);stroke-width:2;fill:none}
+.ge-active{stroke:var(--green2);stroke-width:3;fill:none;filter:drop-shadow(0 0 4px rgba(39,174,96,.5))}
+.gn-lbl{fill:white;font-family:'Press Start 2P',monospace;font-size:12px;dominant-baseline:middle;text-anchor:middle;pointer-events:none}
+.gnw-lbl{fill:rgba(241,196,15,.9);font-family:'Press Start 2P',monospace;font-size:9px;dominant-baseline:middle;text-anchor:middle;pointer-events:none}
+ 
+/* queue display */
+.ds-strip{padding:7px 14px;background:rgba(0,0,0,.25);border-bottom:2px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;gap:8px;overflow-x:auto;min-height:38px;flex-shrink:0}
+.ds-lbl{font-family:var(--font);font-size:6.5px;color:var(--dim);white-space:nowrap}
+.ds-items{display:flex;gap:4px}
+.ds-cell{padding:3px 8px;border:2px solid rgba(39,174,96,.4);
+  font-family:var(--font);font-size:7px;color:var(--green2);background:rgba(39,174,96,.08);
+  animation:cellPop .2s ease both}
+@keyframes cellPop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+.ds-cell.stk{border-color:rgba(155,89,182,.4);color:var(--purple2);background:rgba(155,89,182,.08)}
+ 
+/* click order display */
+.click-order{padding:7px 14px;background:rgba(0,0,0,.15);border-bottom:2px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;gap:8px;flex-shrink:0}
+.co-lbl{font-family:var(--font);font-size:6.5px;color:var(--dim)}
+.co-items{display:flex;gap:4px;flex-wrap:wrap}
+.co-item{width:26px;height:26px;display:grid;place-items:center;
+  border:2px solid rgba(241,196,15,.4);font-family:var(--font);font-size:8px;
+  color:var(--coin);background:rgba(241,196,15,.06);
+  animation:cellPop .2s ease both}
+ 
+/* ═══════════════════════════════════════
+   QUESTION MODAL  (in-game challenge)
+═══════════════════════════════════════ */
+.q-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(6px);padding:20px;
+}
+.q-overlay.open{display:flex;animation:fadeIn .25s ease both}
+.q-box{
+  background:rgba(10,5,30,.97);border:4px solid var(--coin);
+  box-shadow:8px 8px 0 rgba(241,196,15,.2),0 0 60px rgba(155,89,182,.3);
+  padding:28px;max-width:480px;width:100%;
+  animation:qPop .35s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes qPop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.q-title{font-family:var(--font);font-size:10px;color:var(--coin);
+  margin-bottom:6px;text-shadow:2px 2px 0 var(--coin2)}
+.q-sub{font-size:.8rem;color:var(--dim);margin-bottom:16px;font-weight:600;line-height:1.5}
+.q-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.q-opt{padding:10px 14px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);
+  color:var(--white);font-weight:700;font-size:.86rem;text-align:left;
+  cursor:pointer;transition:all .18s}
+.q-opt:hover{border-color:var(--coin);background:rgba(241,196,15,.06)}
+.q-opt.correct{border-color:var(--green2);background:rgba(39,174,96,.12);color:#aaffcc}
+.q-opt.wrong{border-color:var(--red2);background:rgba(231,76,60,.1);color:#ffaaaa}
+.q-fb{padding:10px 13px;font-size:.82rem;font-weight:600;line-height:1.5;margin-bottom:10px}
+.q-fb.win{background:rgba(39,174,96,.1);border-left:3px solid var(--green2);color:#aaffcc}
+.q-fb.lose{background:rgba(231,76,60,.09);border-left:3px solid var(--red2);color:#ffaaaa}
+.q-close{font-family:var(--font);font-size:8px;padding:9px 22px;border:2px solid var(--coin);
+  background:rgba(241,196,15,.15);color:var(--coin);cursor:pointer;transition:all .18s}
+.q-close:hover{background:var(--coin);color:var(--dark)}
+ 
+/* ═══════════════════════════════════════
+   LEVEL UP OVERLAY
+═══════════════════════════════════════ */
+.lvlup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
+  z-index:700;align-items:center;justify-content:center;backdrop-filter:blur(14px)}
+.lvlup-overlay.open{display:flex;animation:fadeIn .3s ease both}
+.lvlup-box{background:rgba(10,5,30,.98);border:5px solid var(--coin);
+  box-shadow:8px 8px 0 var(--coin2),0 0 80px rgba(241,196,15,.25);
+  padding:44px 40px;text-align:center;max-width:400px;width:92%;
+  animation:qPop .6s cubic-bezier(.16,1,.3,1) both}
+.lvlup-emoji{font-size:4rem;display:block;margin-bottom:12px;animation:spinPop .6s ease both .2s}
+@keyframes spinPop{from{transform:scale(0) rotate(-180deg)}to{transform:scale(1) rotate(0)}}
+.lvlup-title{font-family:var(--font);font-size:1.4rem;color:var(--coin);
+  text-shadow:3px 3px 0 var(--coin2);margin-bottom:8px;line-height:1.4}
+.lvlup-name{font-family:var(--font);font-size:11px;color:var(--purple2);margin-bottom:10px}
+.lvlup-perk{font-size:.85rem;color:var(--dim);margin-bottom:22px;font-weight:600}
+.lvlup-ok{font-family:var(--font);font-size:9px;padding:12px 28px;border:3px solid #1e8449;
+  background:var(--green);color:white;cursor:pointer;
+  box-shadow:4px 4px 0 rgba(0,0,0,.4);transition:all .15s}
+.lvlup-ok:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 rgba(0,0,0,.4)}
+ 
+/* badge popup */
+.badge-pop{position:fixed;bottom:70px;right:20px;
+  background:rgba(10,5,30,.97);border:3px solid var(--coin);
+  box-shadow:4px 4px 0 var(--coin2);
+  padding:14px 18px;display:flex;align-items:center;gap:12px;
+  z-index:600;transform:translateX(120%);transition:transform .4s cubic-bezier(.16,1,.3,1);
+  max-width:260px}
+.badge-pop.show{transform:translateX(0)}
+.badge-pop-icon{font-size:2rem;flex-shrink:0}
+.badge-pop-text b{display:block;font-family:var(--font);font-size:8px;color:var(--coin)}
+.badge-pop-text span{font-size:.73rem;color:var(--dim);font-weight:600}
+ 
+/* xp pop */
+.xp-pop{position:fixed;pointer-events:none;z-index:600;
+  font-family:var(--font);font-size:14px;color:var(--coin);
+  text-shadow:2px 2px 0 var(--coin2);
+  animation:xpFly 1.8s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes xpFly{0%{opacity:1;transform:translateY(0) scale(1)}
+  60%{opacity:1;transform:translateY(-55px) scale(1.15)}
+  100%{opacity:0;transform:translateY(-85px) scale(.9)}}
+ 
+/* scenario progress bar (RBT game) */
+.scenario-progress{display:flex;gap:6px;padding:10px 14px;
+  background:rgba(0,0,0,.2);border-bottom:2px solid rgba(255,255,255,.06);flex-shrink:0}
+.sp-dot{width:12px;height:12px;border:2px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.05);transition:all .3s}
+.sp-dot.done{background:var(--green2);border-color:var(--green);box-shadow:0 0 6px var(--green)}
+.sp-dot.current{background:var(--coin);border-color:var(--coin2);box-shadow:0 0 6px var(--coin);animation:bl .6s infinite}
+ 
+/* ═══════════════════════════════════════
+   MASTER CLASS OVERLAY
+═══════════════════════════════════════ */
+.mc-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
+  z-index:800;overflow-y:auto;align-items:flex-start;justify-content:center;
+  padding:20px;backdrop-filter:blur(8px)}
+.mc-overlay.open{display:flex;animation:fadeIn .3s ease both}
+.mc-box{background:rgba(10,5,30,.99);border:4px solid var(--coin);
+  box-shadow:8px 8px 0 rgba(241,196,15,.15);
+  max-width:700px;width:100%;padding:0;animation:qPop .4s cubic-bezier(.16,1,.3,1) both}
+.mc-header{padding:22px 26px 16px;border-bottom:2px solid rgba(255,255,255,.08);
+  background:rgba(45,10,94,.4);position:sticky;top:0;z-index:1;backdrop-filter:blur(8px);
+  display:flex;align-items:center;gap:14px}
+.mc-icon{font-size:2.2rem;flex-shrink:0}
+.mc-algo-name{font-family:var(--font);font-size:9px;color:var(--coin);margin-bottom:3px}
+.mc-lvl-badge{font-family:var(--font);font-size:7px;color:var(--green2)}
+.mc-content{padding:22px 26px}
+.mc-section{margin-bottom:26px}
+.mc-sec-title{font-family:var(--font);font-size:9px;margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;padding-bottom:7px;
+  border-bottom:1px solid rgba(255,255,255,.07)}
+.mc-step{display:flex;gap:11px;margin-bottom:9px}
+.mc-step-num{width:24px;height:24px;display:grid;place-items:center;
+  font-family:var(--font);font-size:8px;flex-shrink:0;border:2px solid;margin-top:2px}
+.mc-step-txt{font-size:.84rem;color:var(--dim);line-height:1.65;font-weight:500}
+.mc-step-txt b{font-weight:800;color:var(--white)}
+.mc-code{background:#050515;border:2px solid rgba(155,89,182,.2);
+  padding:14px 16px;overflow-x:auto;font-family:'Courier New',monospace;
+  font-size:.77rem;line-height:1.75;color:#e2e8f0;margin-bottom:8px}
+.mc-code .kw{color:var(--purple2)}.mc-code .fn{color:var(--blue2)}
+.mc-code .cm{color:#4a5568;font-style:italic}.mc-code .st{color:var(--green2)}.mc-code .nm{color:var(--coin)}
+.mc-tabs{display:flex;gap:0;background:rgba(0,0,0,.3);margin-bottom:12px;
+  border:2px solid rgba(255,255,255,.1)}
+.mc-tab{flex:1;padding:8px;border:none;background:transparent;font-family:var(--font);
+  font-size:7px;color:var(--dim);cursor:pointer;transition:all .2s}
+.mc-tab.on{background:var(--purple);color:white}
+.mc-problem{padding:11px 14px;border:2px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.02);margin-bottom:7px;cursor:pointer;transition:all .18s}
+.mc-problem:hover{border-color:rgba(241,196,15,.3);background:rgba(241,196,15,.03)}
+.mc-problem-title{font-weight:700;font-size:.84rem;margin-bottom:3px}
+.mc-problem-meta{font-size:.72rem;color:var(--dim);display:flex;gap:10px}
+.diff-e{color:var(--green2)}.diff-m{color:var(--coin)}.diff-h{color:var(--red2)}
+.mc-insight{display:flex;gap:9px;margin-bottom:7px;padding:9px 13px;
+  background:rgba(52,152,219,.05);border-left:3px solid var(--blue2)}
+.mc-insight-icon{font-size:1.1rem;flex-shrink:0}
+.mc-insight-txt{font-size:.82rem;color:var(--dim);line-height:1.55;font-weight:500}
+.mc-close{font-family:var(--font);font-size:8px;padding:11px 28px;
+  border:3px solid var(--green);background:rgba(39,174,96,.15);
+  color:var(--green2);cursor:pointer;transition:all .18s;
+  box-shadow:3px 3px 0 rgba(0,0,0,.4)}
+.mc-close:hover{background:var(--green);color:white}
+ 
+ 
+/* ═══════════════════════════════════════
+   MODE SELECTOR  (home page)
+═══════════════════════════════════════ */
+.mode-selector{
+  display:flex;gap:0;padding:0 0 0 0;
+  background:rgba(0,0,0,.4);
+  border-bottom:3px solid rgba(255,255,255,.08);
+  position:sticky;top:54px;z-index:150;
+}
+.mode-btn{
+  flex:1;padding:14px;border:none;background:transparent;
+  font-family:var(--font);font-size:9px;color:var(--dim);
+  cursor:pointer;transition:all .2s;letter-spacing:.5px;
+  border-bottom:3px solid transparent;margin-bottom:-3px;
+}
+.mode-btn:hover{color:var(--white);background:rgba(255,255,255,.04)}
+.mode-btn.active{color:var(--coin);border-bottom-color:var(--coin);background:rgba(241,196,15,.04)}
+.mode-section{display:none}
+.mode-section.active{display:block}
+ 
+/* ═══════════════════════════════════════
+   LEARN PAGE  (full page)
+═══════════════════════════════════════ */
+#learn-page{padding-bottom:60px}
+.learn-topbar{
+  display:flex;align-items:center;gap:12px;padding:0 20px;height:54px;
+  background:rgba(10,3,24,.95);border-bottom:3px solid rgba(255,255,255,.1);
+  position:sticky;top:0;z-index:200;
+}
+.learn-topbar .t-logo{font-family:var(--font);font-size:9px;color:var(--blue2);white-space:nowrap}
+ 
+/* DSA picker */
+.learn-dsa-tabs{
+  display:flex;gap:0;
+  background:rgba(0,0,0,.4);
+  border-bottom:2px solid rgba(255,255,255,.08);
+  position:sticky;top:54px;z-index:150;
+}
+.ldsa-tab{
+  flex:1;padding:12px;border:none;background:transparent;
+  font-family:var(--font);font-size:8px;color:var(--dim);
+  cursor:pointer;transition:all .22s;letter-spacing:.3px;
+  border-bottom:3px solid transparent;margin-bottom:-2px;
+}
+.ldsa-tab:hover{color:var(--white)}
+.ldsa-tab.on{color:var(--coin);border-bottom-color:var(--coin);background:rgba(241,196,15,.04)}
+ 
+/* Learn layout */
+.learn-layout{
+  display:grid;grid-template-columns:320px 1fr;
+  min-height:calc(100vh - 110px);
+}
+.learn-sidebar{
+  background:rgba(10,3,24,.92);border-right:2px solid rgba(255,255,255,.06);
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+.learn-canvas{
+  position:relative;background:rgba(0,0,0,.3);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+ 
+/* Op panel */
+.op-panel{padding:16px;border-bottom:2px solid rgba(255,255,255,.07);flex-shrink:0}
+.op-panel-title{font-family:var(--font);font-size:8px;color:var(--coin);margin-bottom:12px;letter-spacing:.5px}
+ 
+/* Input row */
+.input-row{display:flex;gap:7px;margin-bottom:10px;align-items:center;flex-wrap:wrap}
+.learn-input{
+  padding:9px 12px;background:rgba(255,255,255,.06);
+  border:2px solid rgba(255,255,255,.15);color:var(--white);
+  font-size:.9rem;font-weight:700;outline:none;transition:border-color .2s;
+  width:90px;
+}
+.learn-input:focus{border-color:var(--coin)}
+.learn-input.wide{width:160px}
+ 
+/* Op buttons */
+.op-btns{display:flex;gap:6px;flex-wrap:wrap}
+.op-btn{
+  padding:8px 14px;border:2px solid;font-family:var(--font);
+  font-size:7.5px;cursor:pointer;transition:all .15s;
+  box-shadow:2px 2px 0 rgba(0,0,0,.3);letter-spacing:.3px;
+}
+.op-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(0,0,0,.3)}
+.op-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,.3)}
+.op-btn.ins{background:rgba(39,174,96,.15);border-color:var(--green2);color:var(--green2)}
+.op-btn.del{background:rgba(231,76,60,.1);border-color:var(--red2);color:var(--red2)}
+.op-btn.srch{background:rgba(52,152,219,.1);border-color:var(--blue2);color:var(--blue2)}
+.op-btn.trav{background:rgba(155,89,182,.12);border-color:var(--purple2);color:var(--purple2)}
+.op-btn.rand{background:rgba(241,196,15,.1);border-color:var(--coin);color:var(--coin)}
+.op-btn.rst{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.2);color:var(--dim)}
+ 
+/* Speed slider */
+.spd-row{display:flex;align-items:center;gap:7px;margin-top:10px;flex-wrap:wrap}
+.spd-lbl{font-family:var(--font);font-size:6.5px;color:var(--dim)}
+input[type=range]{accent-color:var(--coin);cursor:pointer;width:90px}
+.spd-val{font-family:var(--font);font-size:7px;color:var(--coin);min-width:28px}
+ 
+/* Explanation panel */
+.explain-panel{padding:14px;border-bottom:2px solid rgba(255,255,255,.07);flex-shrink:0}
+.explain-title{font-family:var(--font);font-size:7px;color:var(--purple2);margin-bottom:8px;letter-spacing:.3px}
+.explain-box{
+  background:rgba(155,89,182,.06);border:2px solid rgba(155,89,182,.2);
+  border-radius:0;padding:10px 13px;font-size:.82rem;line-height:1.65;
+  color:var(--dim);font-weight:500;min-height:70px;transition:all .3s;
+}
+.explain-box.active{border-color:var(--purple2);color:var(--white);background:rgba(155,89,182,.1)}
+.explain-box b{color:var(--coin);font-weight:800}
+.explain-box .hl-green{color:var(--green2);font-weight:700}
+.explain-box .hl-red{color:var(--red2);font-weight:700}
+.explain-box .hl-blue{color:var(--blue2);font-weight:700}
+.explain-box .hl-yellow{color:var(--coin);font-weight:700}
+ 
+/* Step log */
+.learn-log{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:5px}
+.learn-log::-webkit-scrollbar{width:3px}
+.learn-log::-webkit-scrollbar-thumb{background:rgba(155,89,182,.25)}
+.llog-item{
+  padding:7px 10px;font-size:.77rem;line-height:1.5;color:var(--dim);
+  border-left:2px solid transparent;font-weight:500;
+  animation:liIn .22s ease-out both;
+}
+.llog-item.step{border-left-color:var(--purple2);color:var(--white);background:rgba(155,89,182,.04)}
+.llog-item.ok{border-left-color:var(--green2);color:#aaffcc;background:rgba(39,174,96,.03)}
+.llog-item.err{border-left-color:var(--red2);color:#ffaaaa;background:rgba(231,76,60,.03)}
+.llog-item.info{border-left-color:var(--blue2);color:rgba(200,220,255,.9);background:rgba(52,152,219,.03)}
+.llog-num{font-family:var(--font);font-size:6.5px;color:var(--coin);margin-right:5px}
+ 
+/* Complexity badge */
+.cx-bar{
+  padding:10px 14px;border-top:2px solid rgba(255,255,255,.06);
+  background:rgba(0,0,0,.2);display:flex;gap:14px;flex-wrap:wrap;flex-shrink:0;
+}
+.cx-chip{
+  padding:4px 10px;border:2px solid;font-family:var(--font);font-size:6.5px;
+  background:rgba(255,255,255,.03);
+}
+.cx-chip.time{border-color:rgba(155,89,182,.4);color:var(--purple2)}
+.cx-chip.space{border-color:rgba(52,152,219,.4);color:var(--blue2)}
+.cx-chip.op{border-color:rgba(241,196,15,.35);color:var(--coin)}
+ 
+/* SVG canvas */
+.learn-svg-wrap{flex:1;overflow:hidden;position:relative}
+.learn-svg-wrap svg{display:block;width:100%;height:100%}
+.learn-hint{
+  position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+  font-family:var(--font);font-size:6.5px;color:var(--dim);
+  background:rgba(0,0,0,.7);border:2px solid rgba(255,255,255,.08);
+  padding:5px 13px;pointer-events:none;white-space:nowrap;
+}
+ 
+/* Graph learn mode tabs */
+.graph-algo-tabs{display:flex;gap:0;padding:0;
+  border-bottom:2px solid rgba(255,255,255,.07);flex-shrink:0}
+.gat-btn{flex:1;padding:9px;border:none;background:transparent;
+  font-family:var(--font);font-size:7px;color:var(--dim);
+  cursor:pointer;transition:all .22s;border-bottom:2px solid transparent;margin-bottom:-2px}
+.gat-btn.on{color:var(--green2);border-bottom-color:var(--green2)}
+ 
+/* Trie learn word list */
+.trie-words-list{padding:10px 14px;border-bottom:2px solid rgba(255,255,255,.07);flex-shrink:0}
+.twl-title{font-family:var(--font);font-size:6.5px;color:var(--dim);margin-bottom:6px}
+.twl-chips{display:flex;flex-wrap:wrap;gap:5px}
+.twl-chip{padding:3px 9px;font-family:var(--font);font-size:6px;
+  border:2px solid rgba(52,152,219,.3);color:var(--blue2);background:rgba(52,152,219,.05)}
+.twl-chip.del-mode{border-color:rgba(231,76,60,.3);color:var(--red2);cursor:pointer;transition:all .15s}
+.twl-chip.del-mode:hover{background:rgba(231,76,60,.12)}
+ 
+/* Progress indicator during animation */
+.learn-running .explain-box{animation:explainPulse 1s ease-in-out infinite alternate}
+@keyframes explainPulse{from{box-shadow:0 0 8px rgba(155,89,182,.1)}to{box-shadow:0 0 20px rgba(155,89,182,.35)}}
+ 
+@media(max-width:768px){
+  .learn-layout{grid-template-columns:1fr;grid-template-rows:1fr auto}
+  .learn-sidebar{order:2;max-height:50vh}
+  .learn-canvas{order:1;min-height:300px}
+}
+ 
+/* RESPONSIVE */
+@media(max-width:768px){
+  .rbt-layout,.trie-layout,.graph-layout{grid-template-columns:1fr;grid-template-rows:55vh 1fr;height:auto}
+  .rbt-sidebar,.trie-layout>div:nth-child(2),.graph-layout>div:nth-child(2){max-height:44vh}
+  .game-topbar{height:auto;padding:8px 14px;gap:8px}
+}
+</style>
+</head>
+<body>
+ 
+<!-- Floating decorations -->
+<div class="clouds">
+  <div class="cloud" style="width:120px;height:40px;top:30px;animation-duration:28s;animation-delay:0s"></div>
+  <div class="cloud" style="width:80px;height:28px;top:60px;animation-duration:22s;animation-delay:-8s"></div>
+  <div class="cloud" style="width:160px;height:50px;top:15px;animation-duration:35s;animation-delay:-15s"></div>
+</div>
+<div class="fcoin" style="left:5%;top:20%;animation-delay:0s">⭐</div>
+<div class="fcoin" style="left:92%;top:30%;animation-delay:1s">🪙</div>
+<div class="fcoin" style="left:8%;top:60%;animation-delay:.5s">⭐</div>
+ 
+<div id="toast"></div>
+ 
+<!-- ════════════════════════════════════
+     AUTH PAGE
+════════════════════════════════════ -->
+<div id="auth-page" class="page active">
+<div class="game-title-wrap">
+  <span class="game-title">⚔️ DSA QUEST ⚔️</span>
+  <span class="game-subtitle">MASTER DATA STRUCTURES &amp; ALGORITHMS</span>
+</div>
+ 
+<!-- Character select -->
+<div class="char-pick-title">— CHOOSE YOUR HERO —</div>
+<div class="char-row" id="char-row">
+  <div class="char-card selected" data-char="🤖" data-cname="Robo" onclick="selectChar(this)">
+    <span class="char-emoji">🤖</span>
+    <span class="char-name">ROBO</span>
+    <span class="char-role">Graph Expert</span>
+  </div>
+  <div class="char-card" data-char="🧙" data-cname="Wizard" onclick="selectChar(this)">
+    <span class="char-emoji">🧙</span>
+    <span class="char-name">WIZARD</span>
+    <span class="char-role">Tree Master</span>
+  </div>
+  <div class="char-card" data-char="🦜" data-cname="Polly" onclick="selectChar(this)">
+    <span class="char-emoji">🦜</span>
+    <span class="char-name">POLLY</span>
+    <span class="char-role">Word Weaver</span>
+  </div>
+</div>
+ 
+<!-- Login / Signup panel -->
+<div class="auth-panel">
+  <div class="auth-panel-title" id="auth-panel-title">PLAYER LOGIN</div>
+  <div class="auth-panel-sub" id="auth-panel-sub">Continue your adventure</div>
+  <div class="auth-tabs">
+    <button class="auth-tab on" id="tab-login" onclick="switchTab('login')">▶ LOGIN</button>
+    <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">★ NEW PLAYER</button>
+  </div>
+  <div id="auth-msg" class="auth-msg"></div>
+  <div id="form-login">
+    <div class="fg"><label>📧 EMAIL</label><input id="li-email" type="email" placeholder="player@quest.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="fg"><label>🔑 PASSWORD</label>
+      <div class="pw-wrap">
+        <input id="li-pass" type="password" placeholder="secret key" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="eye-btn" type="button" onclick="toggleEye('li-pass',this)" tabindex="-1">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <button class="btn-auth" onclick="doLogin()">▶ ENTER THE REALM</button>
+    <div class="demo-row">Try demo: <span class="demo-link" onclick="fillDemo()">FILL DEMO</span></div>
+  </div>
+  <div id="form-signup" style="display:none">
+    <div class="fg"><label>🦸 HERO NAME</label><input id="su-name" type="text" placeholder="Name your legend" autocomplete="name"></div>
+    <div class="fg"><label>📧 EMAIL</label><input id="su-email" type="email" placeholder="player@quest.com" autocomplete="email"></div>
+    <div class="fg"><label>🔑 SECRET KEY (min 6)</label>
+      <div class="pw-wrap">
+        <input id="su-pass" type="password" placeholder="choose wisely" autocomplete="new-password" onkeydown="if(event.key==='Enter')doSignup()">
+        <button class="eye-btn" type="button" onclick="toggleEye('su-pass',this)" tabindex="-1">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <button class="btn-auth" onclick="doSignup()">★ BEGIN QUEST</button>
+  </div>
+</div>
+</div>
+ 
+<!-- ════════════════════════════════════
+     HOME — WORLD MAP
+════════════════════════════════════ -->
+<div id="home-page" class="page">
+<div class="world-topbar">
+  <span class="t-logo">⚔️ DSA QUEST</span>
+  <div style="width:1px;height:24px;background:rgba(255,255,255,.1);flex-shrink:0"></div>
+  <div class="player-chip">
+    <div class="player-avatar" id="home-avatar">🤖</div>
+    <div>
+      <div class="player-name" id="uname">Hero</div>
+      <div class="player-lvl" id="home-plvl">Level 1 · Rookie</div>
+    </div>
+  </div>
+  <div class="xp-mini" style="margin-left:8px">
+    <div class="xp-bar-wrap"><div class="xp-bar-fill" id="hxp-fill" style="width:0%"></div></div>
+    <div class="xp-txt" id="hxp-txt">0 XP</div>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:9px;align-items:center">
+    <div class="stat-pill">🪙 <span class="sv" id="h-coins">0</span></div>
+    <div class="stat-pill">🔥 <span class="sv" id="h-streak">0</span></div>
+    <button class="pixel-btn btn-gray" style="font-size:7px;padding:7px 13px" onclick="doLogout()">LOGOUT</button>
+  </div>
+</div>
+ 
+<div class="world-stats">
+  <div class="wstat"><div class="wstat-val" style="color:var(--coin)" id="hs-xp">0</div><div class="wstat-lbl">TOTAL XP</div></div>
+  <div class="wstat"><div class="wstat-val" style="color:var(--purple2)" id="hs-lvl">1</div><div class="wstat-lbl">LEVEL</div></div>
+  <div class="wstat"><div class="wstat-val" style="color:var(--green2)" id="hs-badges">0</div><div class="wstat-lbl">BADGES</div></div>
+  <div class="wstat"><div class="wstat-val" style="color:var(--blue2)" id="hs-algos">0</div><div class="wstat-lbl">WINS</div></div>
+</div>
+ 
+<!-- MODE SELECTOR -->
+<div class="mode-selector">
+  <button class="mode-btn active" id="mode-game-btn" onclick="switchMode('game')">⚔️ GAME MODE</button>
+  <button class="mode-btn" id="mode-learn-btn" onclick="switchMode('learn')">📚 LEARN MODE</button>
+</div>
+ 
+<!-- GAME MODE SECTION -->
+<div class="mode-section active" id="mode-game-section">
+<div class="world-hero">
+  <h1>CHOOSE YOUR WORLD</h1>
+  <p>Complete each world to earn XP, badges and unlock the next challenge!</p>
+</div>
+ 
+<div class="quests-area">
+  <div class="quests-label">— AVAILABLE WORLDS —</div>
+ 
+  <!-- World 1: RBT -->
+  <div class="quest-card qc-rbt" id="qi-rbt" onclick="showGame('rbt')">
+    <div class="qc-banner">
+      <div class="qc-icon">🌳</div>
+      <div>
+        <div class="qc-name">RED-BLACK TREE ARENA</div>
+        <div class="qc-desc">Fix broken Red-Black Trees! Use rotations and recolouring to restore balance. Used in every real database engine.</div>
+      </div>
+      <div class="qc-meta">
+        <div class="qc-stars" id="qs-rbt">☆☆☆</div>
+        <div class="qc-xp">⭐ UP TO +150 XP</div>
+      </div>
+    </div>
+    <div class="qc-missions">
+      <div class="mc todo" id="mc-rbt-1"><div class="mcd"></div>Fix 3 broken trees</div>
+      <div class="mc todo" id="mc-rbt-2"><div class="mcd"></div>Perform a rotation</div>
+      <div class="mc todo" id="mc-rbt-3"><div class="mcd"></div>Win all 5 scenarios</div>
+      <div class="mc todo" id="mc-rbt-4"><div class="mcd"></div>Get the Master Class</div>
+    </div>
+  </div>
+<!-- World : b+tree -->
+  <div class="quest-card" onclick="window.location.href='../b+ tree/index.html'">
+    <div class="qc-banner">
+        <div class="qc-icon">📁</div>
+        <div>
+            <div class="qc-name">B+ Tree Indexer</div>
+            <div class="qc-desc">Industrial Database Indexing visualization.</div>
+        </div>
+        <div class="qc-meta">
+            <div class="qc-xp">PRO MODE</div>
+        </div>
+    </div>
+</div>
+
+<!-- World : max haep -->
+<div class="quest-card" onclick="window.location.href='../Heap/index.html'">
+    <div class="qc-banner">
+        <div class="qc-icon">🏔️</div>
+        <div>
+            <div class="qc-name">Max-Heap Lab</div>
+            <div class="qc-desc">Professional environment for Priority Queues.</div>
+        </div>
+        <div class="qc-meta">
+            <div class="qc-xp">PRO MODE</div>
+        </div>
+    </div>
+</div>
+ 
+  <!-- World 2: Trie -->
+  <div class="quest-card qc-trie" id="qi-trie" onclick="showGame('trie')">
+    <div class="qc-banner">
+      <div class="qc-icon">🔤</div>
+      <div>
+        <div class="qc-name">TRIE WORD QUEST</div>
+        <div class="qc-desc">Build words letter by letter, watch the prefix tree grow! Power behind Google autocomplete and spell-check.</div>
+      </div>
+      <div class="qc-meta">
+        <div class="qc-stars" id="qs-trie">☆☆☆</div>
+        <div class="qc-xp">⭐ UP TO +120 XP</div>
+        <div class="qc-lock" id="trie-lock" style="display:none">🔒 REACH LEVEL 2</div>
+      </div>
+    </div>
+    <div class="qc-missions">
+      <div class="mc todo" id="mc-trie-1"><div class="mcd"></div>Insert 5 words</div>
+      <div class="mc todo" id="mc-trie-2"><div class="mcd"></div>Find shared prefix</div>
+      <div class="mc todo" id="mc-trie-3"><div class="mcd"></div>Search success + fail</div>
+      <div class="mc todo" id="mc-trie-4"><div class="mcd"></div>Complete the demo</div>
+    </div>
+  </div>
+ 
+  <!-- World 3: Graph -->
+  <div class="quest-card qc-graph" id="qi-graph" onclick="showGame('graph')">
+    <div class="qc-banner">
+      <div class="qc-icon">🧩</div>
+      <div>
+        <div class="qc-name">GRAPH EXPLORER</div>
+        <div class="qc-desc">Traverse graphs by clicking nodes in the correct BFS or DFS order. One wrong click and you retry! Master graph traversal.</div>
+      </div>
+      <div class="qc-meta">
+        <div class="qc-stars" id="qs-graph">☆☆☆</div>
+        <div class="qc-xp">⭐ UP TO +130 XP</div>
+        <div class="qc-lock" id="graph-lock" style="display:none">🔒 REACH LEVEL 2</div>
+      </div>
+    </div>
+    <div class="qc-missions">
+      <div class="mc todo" id="mc-graph-1"><div class="mcd"></div>Complete BFS level</div>
+      <div class="mc todo" id="mc-graph-2"><div class="mcd"></div>Complete DFS level</div>
+      <div class="mc todo" id="mc-graph-3"><div class="mcd"></div>Zero mistakes run</div>
+      <div class="mc todo" id="mc-graph-4"><div class="mcd"></div>Beat Dijkstra level</div>
+    </div>
+  </div>
+</div>
+ 
+</div><!-- end mode-game-section -->
+ 
+<!-- LEARN MODE SECTION -->
+<div class="mode-section" id="mode-learn-section">
+<div style="text-align:center;padding:32px 20px 24px;background:linear-gradient(180deg,transparent,rgba(10,40,80,.4))">
+  <h1 style="font-family:var(--font);font-size:clamp(.9rem,2.5vw,1.4rem);color:var(--blue2);text-shadow:3px 3px 0 rgba(52,152,219,.3);margin-bottom:10px;line-height:1.5">📚 LEARN MODE</h1>
+  <p style="font-size:.9rem;color:var(--dim);max-width:480px;margin:0 auto;font-weight:600">Pick any data structure and explore every operation — with step-by-step explanations as you go!</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;padding:0 20px 40px;max-width:900px;margin:0 auto;width:100%">
+ 
+  <!-- Learn: RBT -->
+  <div class="quest-card qc-rbt" onclick="showLearn('rbt')" style="cursor:pointer">
+    <div class="qc-banner">
+      <div class="qc-icon">🌳</div>
+      <div>
+        <div class="qc-name">RED-BLACK TREE</div>
+        <div class="qc-desc">Insert, delete, search any value. Watch rotations and recolouring happen live with full explanations.</div>
+      </div>
+    </div>
+    <div class="qc-missions" style="font-family:var(--font);font-size:6.5px;color:var(--dim);gap:6px">
+      <span style="padding:4px 10px;border:1.5px solid rgba(231,76,60,.3);color:var(--red2)">INSERT</span>
+      <span style="padding:4px 10px;border:1.5px solid rgba(231,76,60,.2);color:var(--dim)">DELETE</span>
+      <span style="padding:4px 10px;border:1.5px solid rgba(231,76,60,.2);color:var(--dim)">SEARCH</span>
+      <span style="padding:4px 10px;border:1.5px solid rgba(231,76,60,.2);color:var(--dim)">TRAVERSAL</span>
+    </div>
+  </div>
+ 
+  <!-- Learn: Trie -->
+  <div class="quest-card qc-trie" onclick="showLearn('trie')" style="cursor:pointer">
+    <div class="qc-banner">
+      <div class="qc-icon">🔤</div>
+      <div>
+        <div class="qc-name">TRIE</div>
+        <div class="qc-desc">Insert any word, search, delete, and run prefix autocomplete — node by node with narrated explanations.</div>
+      </div>
+    </div>
+    <div class="qc-missions" style="font-family:var(--font);font-size:6.5px;color:var(--dim);gap:6px">
+      <span style="padding:4px 10px;border:1.5px solid rgba(52,152,219,.3);color:var(--blue2)">INSERT WORD</span>
+      <span style="padding:4px 10px;border:1.5px solid rgba(52,152,219,.2);color:var(--dim)">SEARCH</span>
+      <span style="padding:4px 10px;border:1.5px solid rgba(52,152,219,.2);color:var(--dim)">PREFIX</span>
+      <span style="padding:4px 10px;border:1.5px solid rgba(52,152,219,.2);color:var(--dim)">DELETE</span>
+    </div>
+  </div>
+ 
+  <!-- Learn: Graph -->
+  <div class="quest-card qc-graph" onclick="showLearn('graph')" style="cursor:pointer">
+    <div class="qc-banner">
+      <div class="qc-icon">🧩</div>
+      <div>
+        <div class="qc-name">GRAPH</div>
+        <div class="qc-desc">Build your own graph, then run BFS, DFS, or Dijkstra step-by-step with live narrated walkthroughs.</div>
+      </div>
+    </div>
+    <div class="qc-missions" style="font-family:var(--font);font-size:6.5px;color:var(--dim);gap:6px">
+      <span style="padding:4px 10px;border:1.5px solid rgba(39,174,96,.3);color:var(--green2)">BFS</span>
+      <span style="padding:4px 10px;border:1.5px solid rgba(39,174,96,.2);color:var(--dim)">DFS</span>
+      <span style="padding:4px 10px;border:1.5px solid rgba(39,174,96,.2);color:var(--dim)">DIJKSTRA</span>
+      <span style="padding:4px 10px;border:1.5px solid rgba(39,174,96,.2);color:var(--dim)">ADD NODES</span>
+    </div>
+  </div>
+ 
+</div>
+</div><!-- end mode-learn-section -->
+ 
+<!-- Badge wall -->
+<div class="badge-wall">
+  <div class="bw-title">🏅 YOUR BADGE COLLECTION</div>
+  <div class="bw-grid" id="badges-grid"></div>
+</div>
+ 
+</div>
+ 
+<!-- ════════════════════════════════════
+     RED-BLACK TREE GAME PAGE
+════════════════════════════════════ -->
+<div id="rbt-game-page" class="page">
+<div class="game-topbar">
+  <button class="pixel-btn btn-gray" style="font-size:7px;padding:7px 13px" onclick="showGame('home')">← MAP</button>
+  <span style="font-family:var(--font);font-size:9px;color:var(--red2)">🌳 RED-BLACK TREE ARENA</span>
+  <div class="game-score">
+    <div class="gscore-item">SCORE: <span class="sv" id="rbt-score">0</span></div>
+    <div class="gscore-item">LIVES: <span class="sv" id="rbt-lives">❤️❤️❤️</span></div>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <div class="hud-lvl" id="rbt-hud-lvl">Lv 1</div>
+    <div class="hud-xp-bar"><div class="hud-xp-fill" id="rbt-hud-xpf" style="width:0%"></div></div>
+    <div class="hud-xp-txt" id="rbt-hud-xpt">0 XP</div>
+  </div>
+</div>
+<div class="prog-bar"><div class="prog-fill" id="rbt-prog"></div></div>
+<div class="scenario-progress" id="rbt-sp"></div>
+<div class="rbt-layout">
+  <div class="rbt-canvas-area">
+    <svg id="rbt-svg">
+      <defs>
+        <filter id="fr-g"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="fr-y"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="fr-b"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g id="rbt-edges-g"></g>
+      <g id="rbt-nodes-g"></g>
+    </svg>
+    <div id="rbt-cv-hint" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+      font-family:var(--font);font-size:7px;color:var(--dim);background:rgba(0,0,0,.7);
+      border:2px solid rgba(255,255,255,.1);padding:5px 14px;pointer-events:none;white-space:nowrap">
+      Click a node to select it, then use the controls
+    </div>
+  </div>
+  <div class="rbt-sidebar">
+    <div class="scenario-box">
+      <div class="scenario-title" id="rbt-s-title">SCENARIO 1 / 5</div>
+      <div class="scenario-desc" id="rbt-s-desc">Loading scenario...</div>
+    </div>
+    <div class="mascot-zone">
+      <div class="mascot-em">🧙</div>
+      <div><div class="bubble" id="rbt-bubble">I am Wizard Treeby! Red nodes cannot have red children — that's Rule 3. Find the violation and fix it!</div></div>
+    </div>
+    <div class="controls-panel">
+      <div class="ctrl-title">🎮 YOUR CONTROLS</div>
+      <div class="ctrl-row">
+        <button class="pixel-btn btn-red" style="font-size:8px;padding:8px 12px" onclick="rbtAction('rotL')">↺ ROT LEFT</button>
+        <button class="pixel-btn btn-blue" style="font-size:8px;padding:8px 12px" onclick="rbtAction('rotR')">↻ ROT RIGHT</button>
+      </div>
+      <div class="ctrl-row">
+        <button class="pixel-btn btn-purple" style="font-size:8px;padding:8px 12px" onclick="rbtAction('recolor')">🎨 RECOLOR</button>
+        <button class="pixel-btn btn-green" style="font-size:8px;padding:8px 12px" onclick="rbtCheckSolution()">✓ CHECK</button>
+      </div>
+      <div class="ctrl-row">
+        <button class="pixel-btn btn-gray" style="font-size:7px;padding:7px 12px" onclick="rbtNextScenario()">⏭ SKIP</button>
+        <button class="pixel-btn btn-gold" style="font-size:7px;padding:7px 12px" onclick="rbtShowHint()">💡 HINT</button>
+      </div>
+      <div style="margin-top:8px;font-family:var(--font);font-size:6.5px;color:var(--dim)">
+        Selected: <span id="rbt-selected" style="color:var(--coin)">none</span>
+      </div>
+    </div>
+    <div class="step-log" id="rbt-log"><div class="log-item">Select a node by clicking it, then apply a fix!</div></div>
+    <div class="status-bar"><div class="sdot" id="rbt-sdot"></div><span id="rbt-status" style="font-family:var(--font);font-size:7px">Ready</span></div>
+  </div>
+</div>
+</div>
+ 
+<!-- ════════════════════════════════════
+     TRIE GAME PAGE
+════════════════════════════════════ -->
+<div id="trie-game-page" class="page">
+<div class="game-topbar">
+  <button class="pixel-btn btn-gray" style="font-size:7px;padding:7px 13px" onclick="showGame('home')">← MAP</button>
+  <span style="font-family:var(--font);font-size:9px;color:var(--blue2)">🔤 TRIE WORD QUEST</span>
+  <div class="game-score">
+    <div class="gscore-item">SCORE: <span class="sv" id="trie-score">0</span></div>
+    <div class="gscore-item">WORDS: <span class="sv" id="trie-words-done">0/0</span></div>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <div class="hud-lvl" id="trie-hud-lvl">Lv 1</div>
+    <div class="hud-xp-bar"><div class="hud-xp-fill" id="trie-hud-xpf" style="width:0%"></div></div>
+    <div class="hud-xp-txt" id="trie-hud-xpt">0 XP</div>
+  </div>
+</div>
+<div class="prog-bar"><div class="prog-fill" id="trie-prog"></div></div>
+<div class="trie-layout">
+  <div class="trie-canvas-area">
+    <svg id="trie-svg">
+      <g id="trie-edges-g"></g>
+      <g id="trie-nodes-g"></g>
+    </svg>
+    <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+      font-family:var(--font);font-size:7px;color:var(--dim);background:rgba(0,0,0,.7);
+      border:2px solid rgba(255,255,255,.1);padding:5px 14px;pointer-events:none;white-space:nowrap">
+      Click letters to build words — shared prefixes share the same path!
+    </div>
+  </div>
+  <div class="rbt-sidebar">
+    <div class="letter-bank">
+      <div class="lb-title">🔡 LETTER BANK — Click to add</div>
+      <div class="lb-tiles" id="trie-letter-bank"></div>
+    </div>
+    <div class="word-display">
+      <div class="wd-label">BUILDING WORD:</div>
+      <div class="wd-letters" id="trie-word-display"><span class="wd-placeholder">click letters above...</span></div>
+    </div>
+    <div style="padding:8px 14px;display:flex;gap:7px;border-bottom:2px solid rgba(255,255,255,.08);flex-shrink:0">
+      <button class="pixel-btn btn-green" style="font-size:8px;padding:8px 12px;flex:1" onclick="trieSubmitWord()">✓ INSERT</button>
+      <button class="pixel-btn btn-blue" style="font-size:8px;padding:8px 12px;flex:1" onclick="trieSearchWord()">🔍 SEARCH</button>
+      <button class="pixel-btn btn-gray" style="font-size:8px;padding:8px 12px" onclick="trieClearWord()">✕</button>
+    </div>
+    <div class="word-list">
+      <div class="wl-title">TARGET WORDS TO INSERT:</div>
+      <div class="wl-chips" id="trie-target-chips"></div>
+    </div>
+    <div class="mascot-zone" style="border-top:2px solid rgba(255,255,255,.06)">
+      <div class="mascot-em">🦜</div>
+      <div><div class="bubble" id="trie-bubble">I am Polly! Click letters to build a word, then hit INSERT. Watch how shared prefixes (like CA in CAT and CAR) reuse the same path!</div></div>
+    </div>
+    <div class="step-log" id="trie-log"></div>
+    <div class="status-bar"><div class="sdot" id="trie-sdot"></div><span id="trie-status" style="font-family:var(--font);font-size:7px">Ready</span></div>
+  </div>
+</div>
+</div>
+ 
+<!-- ════════════════════════════════════
+     GRAPH GAME PAGE
+════════════════════════════════════ -->
+<div id="graph-game-page" class="page">
+<div class="game-topbar">
+  <button class="pixel-btn btn-gray" style="font-size:7px;padding:7px 13px" onclick="showGame('home')">← MAP</button>
+  <span style="font-family:var(--font);font-size:9px;color:var(--green2)">🧩 GRAPH EXPLORER</span>
+  <div class="game-score">
+    <div class="gscore-item">SCORE: <span class="sv" id="graph-score">0</span></div>
+    <div class="gscore-item">MISTAKES: <span class="sv" id="graph-mistakes">0</span></div>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <div class="hud-lvl" id="graph-hud-lvl">Lv 1</div>
+    <div class="hud-xp-bar"><div class="hud-xp-fill" id="graph-hud-xpf" style="width:0%"></div></div>
+    <div class="hud-xp-txt" id="graph-hud-xpt">0 XP</div>
+  </div>
+</div>
+<div class="prog-bar"><div class="prog-fill" id="graph-prog"></div></div>
+<div class="algo-strip">
+  <span class="algo-strip-name" id="graph-algo-name">BFS CHALLENGE</span>
+  <span class="algo-strip-desc" id="graph-algo-desc">Click nodes in the correct BFS order starting from the green node</span>
+</div>
+<div class="ds-strip">
+  <span class="ds-lbl" id="graph-ds-lbl">Queue:</span>
+  <div class="ds-items" id="graph-ds-items"><span style="font-family:var(--font);font-size:6.5px;color:var(--dim)">empty</span></div>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <button class="pixel-btn btn-blue" style="font-size:7px;padding:5px 11px" onclick="graphNextLevel()">NEXT LEVEL ⏭</button>
+    <button class="pixel-btn btn-gray" style="font-size:7px;padding:5px 11px" onclick="graphRestart()">↺ RETRY</button>
+  </div>
+</div>
+<div class="click-order">
+  <span class="co-lbl">YOUR ORDER:</span>
+  <div class="co-items" id="graph-click-order"></div>
+</div>
+<div class="graph-layout">
+  <div class="graph-canvas-area" id="graph-cv">
+    <svg id="graph-svg">
+      <defs>
+        <marker id="garrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="rgba(39,174,96,.6)" stroke-width="1.5"/>
+        </marker>
+        <filter id="fg-g"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="fg-y"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="fg-r"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g id="graph-edges-g"></g>
+      <g id="graph-nodes-g"></g>
+    </svg>
+  </div>
+  <div class="rbt-sidebar">
+    <div class="scenario-box" style="border-left:3px solid var(--green)">
+      <div class="scenario-title" style="color:var(--green2)" id="graph-lvl-title">LEVEL 1 — BFS BASICS</div>
+      <div class="scenario-desc" id="graph-lvl-desc">Click the nodes in correct BFS order. Start from the green node. Wrong click = retry!</div>
+    </div>
+    <div class="mascot-zone">
+      <div class="mascot-em">🤖</div>
+      <div><div class="bubble" id="graph-bubble">I am Robo! In BFS, visit ALL nodes at distance 1 before going deeper. Think: which nodes are closest to the start?</div></div>
+    </div>
+    <div class="controls-panel">
+      <div class="ctrl-title">📋 CORRECT ORDER SO FAR</div>
+      <div id="graph-correct-so-far" style="font-family:var(--font);font-size:7px;color:var(--green2);min-height:24px;line-height:2">
+        —
+      </div>
+      <div style="height:8px"></div>
+      <div class="ctrl-title">⏱ EXPECTED NEXT</div>
+      <div id="graph-expected-next" style="font-family:var(--font);font-size:10px;color:var(--coin)">?</div>
+    </div>
+    <div class="step-log" id="graph-log"><div class="log-item">Click the START node (green) to begin!</div></div>
+    <div class="status-bar"><div class="sdot" id="graph-sdot"></div><span id="graph-status" style="font-family:var(--font);font-size:7px">Waiting for first click</span></div>
+  </div>
+</div>
+</div>
+ 
+<!-- ════════════════════════════════════
+     LEARN — RBT PAGE
+════════════════════════════════════ -->
+<div id="learn-rbt-page" class="page">
+<div class="learn-topbar">
+  <button class="pixel-btn btn-gray" style="font-size:7px;padding:7px 13px" onclick="showGame('home')">← HOME</button>
+  <span class="t-logo">🌳 RED-BLACK TREE — LEARN</span>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <div class="cx-chip op">O(log n) all ops</div>
+  </div>
+</div>
+<div class="learn-layout">
+  <div class="learn-sidebar">
+    <div class="op-panel">
+      <div class="op-panel-title">🎮 OPERATIONS</div>
+      <div class="input-row">
+        <input class="learn-input" id="lrbt-val" type="number" placeholder="value" min="1" max="999">
+        <button class="op-btn ins" onclick="lrbtInsert()">INSERT</button>
+        <button class="op-btn srch" onclick="lrbtSearch()">SEARCH</button>
+      </div>
+      <div class="op-btns">
+        <button class="op-btn del" onclick="lrbtDelete()">DELETE</button>
+        <button class="op-btn trav" onclick="lrbtTraverse('inorder')">IN-ORDER</button>
+        <button class="op-btn trav" style="border-color:rgba(241,196,15,.4);color:var(--coin)" onclick="lrbtTraverse('preorder')">PRE-ORDER</button>
+        <button class="op-btn rand" onclick="lrbtRandom()">RANDOM</button>
+        <button class="op-btn rst" onclick="lrbtReset()">RESET</button>
+      </div>
+      <div class="spd-row">
+        <span class="spd-lbl">🐢</span>
+        <input type="range" id="lrbt-spd" min="400" max="2500" value="1400" step="100" oninput="document.getElementById('lrbt-spd-lbl').textContent=Math.round(2500/this.value*10)/10+'x'">
+        <span class="spd-lbl">🐇</span>
+        <span class="spd-val" id="lrbt-spd-lbl">1.8x</span>
+        <span class="spd-lbl" style="margin-left:4px">SPEED</span>
+      </div>
+    </div>
+    <div class="explain-panel">
+      <div class="explain-title">🧠 WHAT IS HAPPENING</div>
+      <div class="explain-box" id="lrbt-explain">Insert a number to begin! I will explain every comparison, rotation and recolouring as it happens.</div>
+    </div>
+    <div class="learn-log" id="lrbt-log"></div>
+    <div class="cx-bar">
+      <div class="cx-chip time">TIME: O(log n)</div>
+      <div class="cx-chip space">SPACE: O(n)</div>
+      <div class="cx-chip op" id="lrbt-stats">Nodes: 0 | Height: 0</div>
+    </div>
+  </div>
+  <div class="learn-canvas">
+    <div class="learn-svg-wrap" id="lrbt-svg-wrap">
+      <svg id="lrbt-svg">
+        <defs>
+          <filter id="lrbt-r"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="lrbt-g"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="lrbt-y"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="lrbt-b"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <g id="lrbt-edges"></g>
+        <g id="lrbt-nodes"></g>
+      </svg>
+      <div class="learn-hint">Insert numbers to build the tree — watch it balance automatically!</div>
+    </div>
+  </div>
+</div>
+</div>
+ 
+<!-- ════════════════════════════════════
+     LEARN — TRIE PAGE
+════════════════════════════════════ -->
+<div id="learn-trie-page" class="page">
+<div class="learn-topbar">
+  <button class="pixel-btn btn-gray" style="font-size:7px;padding:7px 13px" onclick="showGame('home')">← HOME</button>
+  <span class="t-logo" style="color:var(--blue2)">🔤 TRIE — LEARN</span>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <div class="cx-chip op" style="border-color:rgba(52,152,219,.4);color:var(--blue2)">O(L) per operation</div>
+  </div>
+</div>
+<div class="learn-layout">
+  <div class="learn-sidebar">
+    <div class="op-panel">
+      <div class="op-panel-title">🎮 OPERATIONS</div>
+      <div class="input-row">
+        <input class="learn-input wide" id="ltrie-val" type="text" placeholder="type a word" maxlength="12" style="text-transform:uppercase">
+        <button class="op-btn ins" onclick="ltrieInsert()">INSERT</button>
+      </div>
+      <div class="op-btns">
+        <button class="op-btn srch" onclick="ltrieSearch()">SEARCH</button>
+        <button class="op-btn trav" onclick="ltriePrefix()">PREFIX</button>
+        <button class="op-btn del" onclick="ltrieDelete()">DELETE</button>
+        <button class="op-btn rand" onclick="ltrieDemo()">DEMO</button>
+        <button class="op-btn rst" onclick="ltrieReset()">RESET</button>
+      </div>
+      <div class="spd-row">
+        <span class="spd-lbl">🐢</span>
+        <input type="range" id="ltrie-spd" min="300" max="2000" value="1200" step="100" oninput="document.getElementById('ltrie-spd-lbl').textContent=Math.round(2000/this.value*10)/10+'x'">
+        <span class="spd-lbl">🐇</span>
+        <span class="spd-val" id="ltrie-spd-lbl">1.7x</span>
+      </div>
+    </div>
+    <div class="trie-words-list">
+      <div class="twl-title">📚 WORDS IN TRIE</div>
+      <div class="twl-chips" id="ltrie-word-chips"><span style="font-family:var(--font);font-size:6.5px;color:var(--dim)">none yet</span></div>
+    </div>
+    <div class="explain-panel">
+      <div class="explain-title">🧠 WHAT IS HAPPENING</div>
+      <div class="explain-box" id="ltrie-explain">Type any word and click INSERT. I will walk through the Trie node by node, explaining every decision!</div>
+    </div>
+    <div class="learn-log" id="ltrie-log"></div>
+    <div class="cx-bar">
+      <div class="cx-chip time">TIME: O(L)</div>
+      <div class="cx-chip space">SPACE: O(N×L)</div>
+      <div class="cx-chip op" id="ltrie-stats" style="border-color:rgba(52,152,219,.4);color:var(--blue2)">Words: 0 | Nodes: 0</div>
+    </div>
+  </div>
+  <div class="learn-canvas">
+    <div class="learn-svg-wrap">
+      <svg id="ltrie-svg">
+        <g id="ltrie-edges"></g>
+        <g id="ltrie-nodes"></g>
+      </svg>
+      <div class="learn-hint">Shared prefixes share the same path — watch the tree grow!</div>
+    </div>
+  </div>
+</div>
+</div>
+ 
+<!-- ════════════════════════════════════
+     LEARN — GRAPH PAGE
+════════════════════════════════════ -->
+<div id="learn-graph-page" class="page">
+<div class="learn-topbar">
+  <button class="pixel-btn btn-gray" style="font-size:7px;padding:7px 13px" onclick="showGame('home')">← HOME</button>
+  <span class="t-logo" style="color:var(--green2)">🧩 GRAPH — LEARN</span>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <div class="cx-chip op" style="border-color:rgba(39,174,96,.4);color:var(--green2)">O(V+E)</div>
+  </div>
+</div>
+<div class="graph-algo-tabs">
+  <button class="gat-btn on" id="lgraph-bfs-btn" onclick="lgraphSetAlgo('bfs')">🔵 BFS</button>
+  <button class="gat-btn" id="lgraph-dfs-btn" onclick="lgraphSetAlgo('dfs')">🟣 DFS</button>
+  <button class="gat-btn" id="lgraph-dijk-btn" onclick="lgraphSetAlgo('dijkstra')">🟠 DIJKSTRA</button>
+</div>
+<div class="learn-layout">
+  <div class="learn-sidebar">
+    <div class="op-panel">
+      <div class="op-panel-title">🎮 BUILD &amp; TRAVERSE</div>
+      <div class="op-btns" style="margin-bottom:10px">
+        <button class="op-btn rand" onclick="lgraphRandom()">NEW GRAPH</button>
+        <button class="op-btn ins" onclick="lgraphRun()">▶ RUN</button>
+        <button class="op-btn trav" onclick="lgraphStep()">⏭ STEP</button>
+        <button class="op-btn rst" onclick="lgraphReset()">↺ RESET</button>
+      </div>
+      <div class="spd-row">
+        <span class="spd-lbl">🐢</span>
+        <input type="range" id="lgraph-spd" min="600" max="3000" value="1800" step="100" oninput="document.getElementById('lgraph-spd-lbl').textContent=Math.round(3000/this.value*10)/10+'x'">
+        <span class="spd-lbl">🐇</span>
+        <span class="spd-val" id="lgraph-spd-lbl">1.7x</span>
+      </div>
+      <div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08)">
+        <div style="font-family:var(--font);font-size:6.5px;color:var(--dim);margin-bottom:6px">DATA STRUCTURE</div>
+        <div class="ds-items" id="lgraph-ds-items" style="flex-wrap:wrap;gap:4px;display:flex">
+          <span style="font-family:var(--font);font-size:6.5px;color:var(--dim)">empty</span>
+        </div>
+      </div>
+    </div>
+    <div class="explain-panel">
+      <div class="explain-title">🧠 WHAT IS HAPPENING</div>
+      <div class="explain-box" id="lgraph-explain">Click NEW GRAPH to generate a random graph, then RUN to start the traversal. I will explain every single step!</div>
+    </div>
+    <div class="learn-log" id="lgraph-log"></div>
+    <div class="cx-bar">
+      <div class="cx-chip time">TIME: O(V+E)</div>
+      <div class="cx-chip space">SPACE: O(V)</div>
+      <div class="cx-chip op" id="lgraph-algo-badge" style="border-color:rgba(39,174,96,.4);color:var(--green2)">BFS</div>
+    </div>
+  </div>
+  <div class="learn-canvas">
+    <div class="learn-svg-wrap">
+      <svg id="lgraph-svg">
+        <defs>
+          <marker id="lg-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="rgba(39,174,96,.6)" stroke-width="1.5"/>
+          </marker>
+          <filter id="lg-g"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="lg-y"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="lg-b"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <g id="lgraph-edges"></g>
+        <g id="lgraph-nodes"></g>
+      </svg>
+      <div class="learn-hint" id="lgraph-hint">Click NEW GRAPH then RUN — or click nodes to add/connect them</div>
+    </div>
+  </div>
+</div>
+</div>
+ 
+ 
+<!-- ════════════════════════════════════
+     QUESTION MODAL
+════════════════════════════════════ -->
+<div class="q-overlay" id="q-modal">
+<div class="q-box">
+  <div class="q-title" id="q-title">🧠 QUICK QUIZ</div>
+  <div id="q-inner"></div>
+  <button class="q-close" onclick="closeQuiz()">CONTINUE ▶</button>
+</div>
+</div>
+ 
+<!-- Level Up -->
+<div class="lvlup-overlay" id="lvlup-overlay">
+<div class="lvlup-box">
+  <span class="lvlup-emoji" id="lvlup-emoji">🎉</span>
+  <div class="lvlup-title">LEVEL UP!</div>
+  <div class="lvlup-name" id="lvlup-name">Algorithm Apprentice</div>
+  <div class="lvlup-perk" id="lvlup-perk">New world unlocked!</div>
+  <button class="lvlup-ok" onclick="closeLvlUp()">AWESOME! ▶</button>
+</div>
+</div>
+ 
+<!-- Badge popup -->
+<div class="badge-pop" id="badge-pop">
+  <div class="badge-pop-icon" id="badge-pop-icon">🏅</div>
+  <div class="badge-pop-text">
+    <b id="badge-pop-title">Badge Earned!</b>
+    <span id="badge-pop-desc">Achievement unlocked</span>
+  </div>
+</div>
+ 
+<!-- Master Class Overlay -->
+<div class="mc-overlay" id="mc-overlay">
+<div class="mc-box">
+  <div class="mc-header">
+    <span class="mc-icon" id="mc-icon">🎓</span>
+    <div>
+      <div class="mc-algo-name" id="mc-algo-name">MASTER CLASS</div>
+      <div class="mc-lvl-badge">World Complete! Here is everything you need to know.</div>
+    </div>
+    <div style="margin-left:auto">
+      <div style="font-family:var(--font);font-size:9px;color:var(--coin)" id="mc-xp-earned">+50 XP</div>
+    </div>
+  </div>
+  <div id="mc-content" class="mc-content"></div>
+  <div style="padding:0 26px 22px">
+    <button class="mc-close" onclick="closeMasterClass()">CLOSE &amp; CONTINUE ▶</button>
+  </div>
+</div>
+</div>
+ 
+<script>
+/* ═══════════════════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════════════════ */
+function toast(msg,dur=2500){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),dur);
+}
+function confetti(){
+  const cols=['#f1c40f','#e74c3c','#2ecc71','#3498db','#9b59b6','#fbbf24'];
+  for(let i=0;i<70;i++){
+    const el=document.createElement('div');el.className='cf-bit';
+    const dur=(Math.random()*1.5+1.1).toFixed(2);
+    el.style.cssText=`left:${Math.random()*100}vw;top:-10px;background:${cols[i%6]};`
+      +`width:${Math.random()*9+4}px;height:${Math.random()*9+4}px;`
+      +`--dur:${dur}s;animation-delay:${(Math.random()*.5).toFixed(2)}s;`
+      +`border-radius:${Math.random()>.5?'50%':'2px'}`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),(parseFloat(dur)+1)*1000);
+  }
+}
+function xpPop(amount){
+  const el=document.createElement('div');el.className='xp-pop';
+  el.textContent='+'+amount+' XP';
+  el.style.cssText='left:'+Math.random()*60+'vw;top:60vh';
+  document.body.appendChild(el);setTimeout(()=>el.remove(),2000);
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function log(key,txt,cls=''){
+  const el=document.getElementById(key+'-log');if(!el)return;
+  const d=document.createElement('div');d.className='log-item'+(cls?' '+cls:'');
+  d.textContent=txt;el.appendChild(d);el.scrollTop=el.scrollHeight;
+  while(el.children.length>50)el.removeChild(el.firstChild);
+}
+function setStatus(key,txt){const el=document.getElementById(key+'-status');if(el)el.textContent=txt;}
+function setProg(key,pct){const el=document.getElementById(key+'-prog');if(el)el.style.width=pct+'%';}
+function setBubble(key,txt){const el=document.getElementById(key+'-bubble');if(el)el.textContent=txt;}
+ 
+/* ═══════════════════════════════════════════════════════════
+   EYE ICON
+═══════════════════════════════════════════════════════════ */
+function toggleEye(id,btn){
+  const inp=document.getElementById(id);
+  const hidden=inp.type==='password';
+  inp.type=hidden?'text':'password';
+  btn.querySelector('svg').innerHTML=hidden
+    ?'<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22"/>'
+    :'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  btn.style.color=hidden?'var(--coin)':'var(--dim)';
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   CHARACTER SELECTION
+═══════════════════════════════════════════════════════════ */
+let selectedChar={emoji:'🤖',name:'Robo'};
+function selectChar(card){
+  document.querySelectorAll('.char-card').forEach(x=>x.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedChar={emoji:card.dataset.char,name:card.dataset.cname};
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   AUTH
+═══════════════════════════════════════════════════════════ */
+let curUser=null;
+function getUsers(){try{return JSON.parse(localStorage.getItem('dsaq_users')||'{}')}catch(e){return{}}}
+function saveUsers(u){try{localStorage.setItem('dsaq_users',JSON.stringify(u))}catch(e){}}
+(()=>{const u=getUsers();if(!u['demo@dsa.com']){u['demo@dsa.com']={name:'Demo Player',pass:'demo123',char:'🤖'};saveUsers(u);}})();
+ 
+function showMsg(txt,type='err'){
+  const el=document.getElementById('auth-msg');
+  el.textContent=txt;el.className='auth-msg '+(type==='ok'?'ok':'err');el.style.display='block';
+}
+function clearMsg(){const el=document.getElementById('auth-msg');if(el)el.style.display='none';}
+ 
+function switchTab(t){
+  document.getElementById('tab-login').className='auth-tab'+(t==='login'?' on':'');
+  document.getElementById('tab-signup').className='auth-tab'+(t==='signup'?' on':'');
+  document.getElementById('form-login').style.display=t==='login'?'block':'none';
+  document.getElementById('form-signup').style.display=t==='signup'?'block':'none';
+  const ti=document.getElementById('auth-panel-title');
+  const su=document.getElementById('auth-panel-sub');
+  if(t==='login'){if(ti)ti.textContent='PLAYER LOGIN';if(su)su.textContent='Continue your adventure';}
+  else{if(ti)ti.textContent='CREATE HERO';if(su)su.textContent='Choose your character above first';}
+  clearMsg();
+}
+function fillDemo(){
+  document.getElementById('li-email').value='demo@dsa.com';
+  document.getElementById('li-pass').value='demo123';
+  switchTab('login');
+  showMsg('Demo filled! Press ENTER THE REALM.','ok');
+}
+function doLogin(){
+  clearMsg();
+  const em=document.getElementById('li-email').value.trim();
+  const pw=document.getElementById('li-pass').value;
+  if(!em||!pw){showMsg('Fill both fields!');return;}
+  const u=getUsers();
+  if(!u[em]){showMsg('No account found.');return;}
+  if(u[em].pass!==pw){showMsg('Wrong password.');return;}
+  curUser=u[em];curUser._email=em;
+  if(!curUser.char){curUser.char=selectedChar.emoji;u[em].char=curUser.char;saveUsers(u);}
+  document.getElementById('uname').textContent=curUser.name;
+  showGame('home');gLoad();
+}
+function doSignup(){
+  clearMsg();
+  const nm=document.getElementById('su-name').value.trim();
+  const em=document.getElementById('su-email').value.trim();
+  const pw=document.getElementById('su-pass').value;
+  if(!nm||!em||!pw){showMsg('Fill all fields!');return;}
+  if(pw.length<6){showMsg('Password needs 6+ characters!');return;}
+  const u=getUsers();
+  if(u[em]){showMsg('Email already registered.');return;}
+  u[em]={name:nm,pass:pw,char:selectedChar.emoji};saveUsers(u);
+  showMsg('Account created! You can now login.','ok');
+  switchTab('login');
+  document.getElementById('li-email').value=em;
+}
+function doLogout(){curUser=null;showGame('auth');}
+ 
+/* ═══════════════════════════════════════════════════════════
+   GAME STATE + LEVELS
+═══════════════════════════════════════════════════════════ */
+const LEVELS=[
+  {lvl:1,name:'ROOKIE',emoji:'🌱',xpNeeded:0},
+  {lvl:2,name:'EXPLORER',emoji:'🔍',xpNeeded:100},
+  {lvl:3,name:'APPRENTICE',emoji:'⚡',xpNeeded:250},
+  {lvl:4,name:'WIZARD',emoji:'🧙',xpNeeded:500},
+  {lvl:5,name:'MASTER',emoji:'🏆',xpNeeded:850},
+  {lvl:6,name:'LEGEND',emoji:'👑',xpNeeded:1300},
+];
+const ALL_BADGES=[
+  {id:'first_login',icon:'🌟',name:'FIRST STEPS',desc:'Logged in for the first time'},
+  {id:'rbt_fix1',icon:'🌳',name:'TREE DOCTOR',desc:'Fixed your first broken Red-Black Tree'},
+  {id:'rbt_all',icon:'🔴',name:'BALANCE MASTER',desc:'Completed all 5 RBT scenarios'},
+  {id:'rbt_perfect',icon:'💎',name:'PERFECT BALANCE',desc:'Completed RBT with no mistakes'},
+  {id:'trie_5words',icon:'🔤',name:'WORD BUILDER',desc:'Inserted 5 words into the Trie'},
+  {id:'trie_prefix',icon:'🔗',name:'PREFIX FINDER',desc:'Found a shared prefix in the Trie'},
+  {id:'trie_complete',icon:'📚',name:'LEXICON MASTER',desc:'Completed all Trie word challenges'},
+  {id:'graph_bfs',icon:'🔵',name:'BFS HERO',desc:'Completed the BFS challenge'},
+  {id:'graph_dfs',icon:'🟣',name:'DFS DIVER',desc:'Completed the DFS challenge'},
+  {id:'graph_nomistakes',icon:'🎯',name:'PERFECT TRAVERSE',desc:'Completed a graph level with 0 mistakes'},
+  {id:'quiz_correct',icon:'🧠',name:'QUICK THINKER',desc:'Answered a quiz question correctly'},
+  {id:'level3',icon:'⚡',name:'RISING STAR',desc:'Reached Level 3'},
+  {id:'level5',icon:'🏅',name:'ALGORITHM MASTER',desc:'Reached Level 5'},
+  {id:'all_worlds',icon:'🗺️',name:'WORLD CONQUEROR',desc:'Completed all three game worlds'},
+];
+ 
+let G={xp:0,coins:0,level:1,streak:1,lastDate:'',badges:[],algos:0,
+       rbtWins:0,trieWords:0,graphWins:0};
+ 
+function gSave(){
+  if(!curUser||!curUser._email)return;
+  const u=getUsers();
+  if(u[curUser._email])u[curUser._email].game=G;
+  saveUsers(u);
+}
+function gLoad(){
+  if(!curUser||!curUser._email)return;
+  const u=getUsers();
+  const s=u[curUser._email]?.game;
+  if(s)G={...G,...s};
+  const today=new Date().toDateString();
+  if(G.lastDate!==today){
+    const yest=new Date(Date.now()-86400000).toDateString();
+    G.streak=G.lastDate===yest?(G.streak||0)+1:1;
+    G.lastDate=today;gSave();
+  }
+  earnBadge('first_login');
+  refreshHomeUI();
+}
+function refreshHomeUI(){
+  const def=LEVELS.find(l=>l.lvl===G.level)||LEVELS[0];
+  const next=LEVELS.find(l=>l.lvl===G.level+1);
+  const xpA=def.xpNeeded,xpB=next?next.xpNeeded:def.xpNeeded+9999;
+  const pct=Math.min(100,Math.round((G.xp-xpA)/(xpB-xpA)*100));
+  const s=id=>document.getElementById(id);
+  if(s('home-avatar'))s('home-avatar').textContent=curUser?curUser.char||'🤖':'🤖';
+  if(s('uname'))s('uname').textContent=curUser?curUser.name:'Hero';
+  if(s('home-plvl'))s('home-plvl').textContent='Level '+G.level+' · '+def.name;
+  if(s('hxp-fill'))s('hxp-fill').style.width=pct+'%';
+  if(s('hxp-txt'))s('hxp-txt').textContent=G.xp+' XP';
+  if(s('h-coins'))s('h-coins').textContent=G.coins;
+  if(s('h-streak'))s('h-streak').textContent=G.streak;
+  if(s('hs-xp'))s('hs-xp').textContent=G.xp;
+  if(s('hs-lvl'))s('hs-lvl').textContent=G.level;
+  if(s('hs-badges'))s('hs-badges').textContent=G.badges.length;
+  if(s('hs-algos'))s('hs-algos').textContent=G.algos;
+  // lock/unlock worlds
+  const trieLock=G.level<2;const graphLock=G.level<2;
+  const tCard=s('qi-trie');const gCard=s('qi-graph');
+  if(tCard){tCard.classList.toggle('locked',trieLock);tCard.onclick=trieLock?()=>toast('🔒 Reach Level 2!'):()=>showGame('trie');}
+  if(gCard){gCard.classList.toggle('locked',graphLock);gCard.onclick=graphLock?()=>toast('🔒 Reach Level 2!'):()=>showGame('graph');}
+  if(s('trie-lock'))s('trie-lock').style.display=trieLock?'':'none';
+  if(s('graph-lock'))s('graph-lock').style.display=graphLock?'':'none';
+  // mission chips
+  mc('mc-rbt-1',G.rbtWins>=1);mc('mc-rbt-2',G.badges.includes('rbt_fix1'));
+  mc('mc-rbt-3',G.rbtWins>=5);mc('mc-rbt-4',G.badges.includes('rbt_all'));
+  mc('mc-trie-1',G.trieWords>=5);mc('mc-trie-2',G.badges.includes('trie_prefix'));
+  mc('mc-trie-3',G.badges.includes('trie_complete'));mc('mc-trie-4',G.trieWords>=3);
+  mc('mc-graph-1',G.badges.includes('graph_bfs'));mc('mc-graph-2',G.badges.includes('graph_dfs'));
+  mc('mc-graph-3',G.badges.includes('graph_nomistakes'));mc('mc-graph-4',G.graphWins>=4);
+  // stars
+  const rbtStars=Math.min(3,G.rbtWins);const trieStars=Math.min(3,Math.floor(G.trieWords/2));const graphStars=Math.min(3,G.graphWins);
+  ['rbt','trie','graph'].forEach((k,i)=>{
+    const stars=[rbtStars,trieStars,graphStars][i];
+    const el=s('qs-'+k);if(el)el.textContent='★'.repeat(stars)+'☆'.repeat(3-stars);
+  });
+  // hud bars
+  ['rbt','trie','graph'].forEach(k=>{
+    if(s(k+'-hud-lvl'))s(k+'-hud-lvl').textContent='Lv '+G.level+' '+def.emoji;
+    if(s(k+'-hud-xpf'))s(k+'-hud-xpf').style.width=pct+'%';
+    if(s(k+'-hud-xpt'))s(k+'-hud-xpt').textContent=G.xp+' XP';
+  });
+  refreshBadges();
+}
+function mc(id,done){
+  const el=document.getElementById(id);if(!el)return;
+  el.classList.toggle('done',done);el.classList.toggle('todo',!done);
+  const dot=el.querySelector('.mcd');
+  if(dot)dot.style.background=done?'var(--green2)':'rgba(255,255,255,.2)';
+}
+function refreshBadges(){
+  const grid=document.getElementById('badges-grid');if(!grid)return;
+  grid.innerHTML=ALL_BADGES.map(b=>{
+    const earned=G.badges.includes(b.id);
+    return`<div class="bw-chip ${earned?'earned':'locked'}" title="${b.desc}">${b.icon} ${b.name}</div>`;
+  }).join('');
+}
+function gainXP(amount,src=''){
+  G.xp+=amount;G.coins+=Math.round(amount/4);G.algos=(G.algos||0)+1;
+  xpPop(amount);
+  const oldLvl=G.level;
+  while(true){const n=LEVELS.find(l=>l.lvl===G.level+1);if(n&&G.xp>=n.xpNeeded)G.level++;else break;}
+  if(G.level>oldLvl){
+    const def=LEVELS.find(l=>l.lvl===G.level)||LEVELS[0];
+    document.getElementById('lvlup-emoji').textContent=def.emoji;
+    document.getElementById('lvlup-name').textContent='LEVEL '+G.level+' — '+def.name;
+    document.getElementById('lvlup-perk').textContent=G.level>=2?'New worlds unlocked!':'Keep going — great work!';
+    document.getElementById('lvlup-overlay').classList.add('open');
+    confetti();
+    if(G.level>=3)earnBadge('level3');
+    if(G.level>=5)earnBadge('level5');
+  }
+  gSave();refreshHomeUI();
+}
+function closeLvlUp(){document.getElementById('lvlup-overlay').classList.remove('open');}
+function earnBadge(id){
+  if(!curUser||G.badges.includes(id))return;
+  const def=ALL_BADGES.find(b=>b.id===id);if(!def)return;
+  G.badges.push(id);gSave();
+  document.getElementById('badge-pop-icon').textContent=def.icon;
+  document.getElementById('badge-pop-title').textContent=def.name;
+  document.getElementById('badge-pop-desc').textContent=def.desc;
+  const pop=document.getElementById('badge-pop');
+  pop.classList.add('show');setTimeout(()=>pop.classList.remove('show'),4000);
+  toast(def.icon+' Badge: '+def.name,3000);
+  gainXP(30,'badge');refreshHomeUI();
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   PAGE NAVIGATION
+═══════════════════════════════════════════════════════════ */
+let rbtInited=false,trieInited2=false,graphInited=false;
+function showGame(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  if(id==='auth')document.getElementById('auth-page').classList.add('active');
+  else if(id==='home'){document.getElementById('home-page').classList.add('active');refreshHomeUI();}
+  else if(id==='rbt'){document.getElementById('rbt-game-page').classList.add('active');if(!rbtInited){rbtInited=true;rbtInitGame();}else rbtLoadScenario();}
+  else if(id==='trie'){document.getElementById('trie-game-page').classList.add('active');if(!trieInited2){trieInited2=true;trieInitGame();}else trieReset();}
+  else if(id==='graph'){document.getElementById('graph-game-page').classList.add('active');if(!graphInited){graphInited=true;graphInitGame();}else graphLoadLevel();}
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   QUIZ SYSTEM
+═══════════════════════════════════════════════════════════ */
+const QUIZZES={
+  rbt:[
+    {q:'Why are new RBT nodes always inserted as RED?',
+     opts:['Red is prettier','Adding RED never changes the black-height, so Rule 4 stays intact','Red nodes are easier to rotate','No particular reason'],
+     ans:1,exp:'Inserting a BLACK node would immediately add an extra black node to its path, breaking the equal-black-height rule. RED only risks a red-red violation, which is easier to fix.'},
+    {q:'Case 1 fix (uncle is RED) uses...',
+     opts:['Rotate left on grandparent','Rotate right on grandparent','Recolour: parent + uncle → BLACK, grandparent → RED','Delete the uncle'],
+     ans:2,exp:'Recolouring! No rotation needed. Parent and uncle go BLACK (fixing the red-red), grandparent goes RED (keeping black-height). Then check grandparent upward.'},
+    {q:'What does a LEFT ROTATION on node X do?',
+     opts:["X's right child takes X's place; X becomes the left child",'X goes up, its parent goes down','X and its left child swap positions','X is deleted and reinserted'],
+     ans:0,exp:'In a left rotation on X: X.right (call it Y) moves up to where X was. X becomes Y.left. BST ordering is preserved. This is used to fix right-heavy subtrees.'},
+  ],
+  trie:[
+    {q:'What makes a Trie faster than a HashMap for prefix search?',
+     opts:['It uses less memory','It follows one character at a time — no hashing needed','It is always O(1)','It stores data sorted'],
+     ans:1,exp:'In a Trie, searching "APP" follows root→A→P→P in exactly 3 steps regardless of how many words are stored. No hash function, no collisions!'},
+    {q:'The end-of-word flag on a Trie node means...',
+     opts:['The node has no children','A valid word ends at this exact node','The character is special','The node will be deleted'],
+     ans:1,exp:'Without the flag, we cannot tell "car" stored alone from "car" just being a prefix of "card". The flag marks WHERE complete words end.'},
+  ],
+  graph:[
+    {q:'BFS uses a Queue. What happens if you use a Stack instead?',
+     opts:['You get faster BFS','You get Depth First Search (DFS)','The algorithm breaks entirely','Nothing changes'],
+     ans:1,exp:'Swapping the Queue for a Stack in BFS gives you DFS exactly! Queue = FIFO = level by level = BFS. Stack = LIFO = deep dive = DFS. The data structure IS the difference.'},
+    {q:'BFS guarantees shortest path when...',
+     opts:['The graph is small','All edges have equal weight (or unweighted)','There are no cycles','The graph is sorted'],
+     ans:1,exp:'BFS explores in order of number of edges from the source. When all edges cost the same, fewest edges = shortest path. For weighted graphs, use Dijkstra.'},
+    {q:'In DFS, "backtracking" means...',
+     opts:['Jumping to the start','Returning to the previous node when stuck','Skipping visited nodes','Restarting from the beginning'],
+     ans:1,exp:'When DFS hits a dead end (no unvisited neighbours), it returns to the previous node and tries a different branch — like retracing steps in a maze.'},
+  ],
+};
+function openQuiz(type){
+  const pool=QUIZZES[type];if(!pool||!pool.length)return;
+  const q=pool[Math.floor(Math.random()*pool.length)];
+  document.getElementById('q-title').textContent='🧠 QUIZ TIME!';
+  document.getElementById('q-inner').innerHTML=
+    `<div class="q-sub">${q.q}</div>
+     <div class="q-opts">${q.opts.map((o,i)=>`<button class="q-opt" onclick="answerQuiz(this,${i},${q.ans},'${q.exp.replace(/'/g,"&#39;").replace(/"/g,"&quot;")}')">${String.fromCharCode(65+i)}. ${o}</button>`).join('')}</div>
+     <div id="q-fb"></div>`;
+  document.getElementById('q-modal').classList.add('open');
+}
+function answerQuiz(btn,chosen,correct,exp){
+  document.querySelectorAll('.q-opt').forEach(b=>b.style.pointerEvents='none');
+  document.querySelectorAll('.q-opt')[correct].classList.add('correct');
+  const fb=document.getElementById('q-fb');
+  if(chosen===correct){
+    btn.classList.add('correct');
+    fb.className='q-fb win';fb.textContent='✓ Correct! +20 XP — '+exp;
+    gainXP(20,'quiz');earnBadge('quiz_correct');confetti();
+  }else{
+    btn.classList.add('wrong');
+    fb.className='q-fb lose';fb.textContent='✗ Not quite. '+exp;
+  }
+}
+function closeQuiz(){document.getElementById('q-modal').classList.remove('open');}
+ 
+/* ═══════════════════════════════════════════════════════════
+   MASTER CLASS DATA
+═══════════════════════════════════════════════════════════ */
+const MC={
+  rbt:{icon:'🌳',name:'RED-BLACK TREE — MASTER CLASS',xp:50,
+    steps:[
+      {col:'#e74c3c',n:1,t:'<b>Insert as RED always.</b> A new RED node never changes black-height, so Rule 4 stays safe. Only Rule 3 might be broken (two reds in a row).'},
+      {col:'#e74c3c',n:2,t:'<b>Case 1 — Uncle is RED:</b> Recolour parent+uncle→BLACK, grandparent→RED. Move check pointer up to grandparent.'},
+      {col:'#fbbf24',n:3,t:'<b>Case 2 — Uncle BLACK, zigzag:</b> Rotate on parent to straighten the path into a straight line (Case 3).'},
+      {col:'#fbbf24',n:4,t:'<b>Case 3 — Uncle BLACK, straight line:</b> Rotate on grandparent, swap colours. Violation resolved!'},
+      {col:'#2ecc71',n:5,t:'<b>Final rule:</b> Root must always be BLACK. Force it after the loop.'},
+    ],
+    complexity:'Search / Insert / Delete: all <b>O(log n)</b> guaranteed. Used in Java TreeMap, C++ std::map, Linux scheduler.',
+    code:`<span class="kw">def</span> <span class="fn">fix_insert</span>(self, z):
+    <span class="kw">while</span> z.parent.color == <span class="st">RED</span>:
+        p, gp = z.parent, z.parent.parent
+        <span class="kw">if</span> p == gp.left:
+            uncle = gp.right
+            <span class="kw">if</span> uncle.color == <span class="st">RED</span>:          <span class="cm"># Case 1</span>
+                p.color = uncle.color = <span class="st">BLACK</span>
+                gp.color = <span class="st">RED</span>;  z = gp
+            <span class="kw">else</span>:
+                <span class="kw">if</span> z == p.right:              <span class="cm"># Case 2</span>
+                    z = p; self.<span class="fn">rotate_left</span>(z)
+                z.parent.color = <span class="st">BLACK</span>       <span class="cm"># Case 3</span>
+                z.parent.parent.color = <span class="st">RED</span>
+                self.<span class="fn">rotate_right</span>(z.parent.parent)
+        <span class="kw">else</span>: <span class="cm"># mirror (right side)</span>
+            <span class="cm"># ... same with left/right swapped</span>
+    self.root.color = <span class="st">BLACK</span>`,
+    problems:[
+      {t:'Count of Smaller Numbers After Self (LC 315)',d:'Hard',h:'Use a BST/RBT to count nodes smaller than current as you insert right-to-left.'},
+      {t:'Sliding Window Median (LC 480)',d:'Hard',h:'Two heaps or a sorted container (C++ multiset = Red-Black Tree) for O(n log n).'},
+      {t:'When to use RBT vs HashMap?',d:'Concept',h:'RBT when you need sorted order, range queries, predecessor/successor. HashMap for pure O(1) lookups.'},
+    ],
+    insights:['Java TreeMap, C++ std::map, Python sortedcontainers — all Red-Black Trees internally.',
+      'The 4 rules: every node red or black, root is black, no two consecutive reds, equal black-height on all paths.',
+      'There are exactly 3 fix-up cases. Memorise them: uncle RED → recolour. Uncle BLACK + zigzag → rotate to straighten. Uncle BLACK + straight → rotate + swap.',
+      'Rotations never break BST ordering — they only change shape.']},
+ 
+  trie:{icon:'🔤',name:'TRIE — MASTER CLASS',xp:40,
+    steps:[
+      {col:'#3498db',n:1,t:'Each Trie node stores a <b>dictionary of children</b> (char→TrieNode) and a <b>boolean is_end</b> marking word boundaries.'},
+      {col:'#3498db',n:2,t:'<b>Insert:</b> Walk from root, one char at a time. If no child for the char, create one. Mark is_end=True on the last node.'},
+      {col:'#2ecc71',n:3,t:'<b>Search:</b> Walk char by char. If any char missing → word not found. If all chars present AND is_end=True → found!'},
+      {col:'#2ecc71',n:4,t:'<b>Prefix check (starts_with):</b> Same as search but without the is_end check at the end.'},
+      {col:'#f1c40f',n:5,t:'<b>Autocomplete:</b> Walk to the prefix node, then DFS from there to collect all words ending below it.'},
+    ],
+    complexity:'Insert/Search/Prefix: <b>O(L)</b> where L = word length. Space: O(N × L). Used in Google autocomplete, spell-checkers, IP routing.',
+    code:`<span class="kw">class</span> <span class="fn">TrieNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self.children = {}   <span class="cm"># char → TrieNode</span>
+        self.is_end   = <span class="nm">False</span>
+ 
+<span class="kw">class</span> <span class="fn">Trie</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self): self.root = <span class="fn">TrieNode</span>()
+ 
+    <span class="kw">def</span> <span class="fn">insert</span>(self, word):
+        node = self.root
+        <span class="kw">for</span> ch <span class="kw">in</span> word:
+            <span class="kw">if</span> ch <span class="kw">not in</span> node.children:
+                node.children[ch] = <span class="fn">TrieNode</span>()
+            node = node.children[ch]
+        node.is_end = <span class="nm">True</span>
+ 
+    <span class="kw">def</span> <span class="fn">search</span>(self, word):
+        node = self.root
+        <span class="kw">for</span> ch <span class="kw">in</span> word: <span class="cm"># walk char by char</span>
+            <span class="kw">if</span> ch <span class="kw">not in</span> node.children: <span class="kw">return False</span>
+            node = node.children[ch]
+        <span class="kw">return</span> node.is_end  <span class="cm"># must be a complete word</span>
+ 
+    <span class="kw">def</span> <span class="fn">starts_with</span>(self, prefix):
+        node = self.root
+        <span class="kw">for</span> ch <span class="kw">in</span> prefix:
+            <span class="kw">if</span> ch <span class="kw">not in</span> node.children: <span class="kw">return False</span>
+            node = node.children[ch]
+        <span class="kw">return True</span>  <span class="cm"># no is_end check!</span>`,
+    problems:[
+      {t:'Implement Trie (LC 208)',d:'Medium',h:'This is exactly the class above. The most direct Trie problem.'},
+      {t:'Word Search II (LC 212)',d:'Hard',h:'Build Trie of all target words. DFS on the board, follow the Trie. Prune when path ends.'},
+      {t:'Replace Words (LC 648)',d:'Medium',h:'Build Trie of roots. For each sentence word, walk Trie until is_end — that root replaces the word.'},
+    ],
+    insights:['The only difference between search() and starts_with() is the final is_end check.',
+      'A Trie is always the answer when you need autocomplete, spell-check, or prefix matching.',
+      'For lowercase letters only, use an array of 26 instead of a dict for better cache performance.',
+      'Autocomplete = walk to prefix node + DFS from there.']},
+ 
+  graph:{icon:'🧩',name:'BFS & DFS — MASTER CLASS',xp:45,
+    steps:[
+      {col:'#3498db',n:1,t:'<b>BFS:</b> Start at source. Mark visited. Add to Queue. Dequeue front → visit → add unvisited neighbours to BACK. Repeat.'},
+      {col:'#3498db',n:2,t:'<b>BFS guarantee:</b> Processes level-by-level (FIFO). In unweighted graphs, first time you reach a node = shortest path.'},
+      {col:'#9b59b6',n:3,t:'<b>DFS:</b> Start at source. Use Stack (or recursion). Pop top → visit → push unvisited neighbours. Dives deep before backtracking.'},
+      {col:'#9b59b6',n:4,t:'<b>DFS guarantee:</b> Visits all reachable nodes, great for cycle detection, finding all paths, topological sort.'},
+      {col:'#f1c40f',n:5,t:'<b>Key difference:</b> Queue = BFS (wide). Stack = DFS (deep). Literally just swap the data structure!'},
+    ],
+    complexity:'BFS + DFS: Time <b>O(V + E)</b>. Space O(V). V = vertices, E = edges.',
+    code:`<span class="kw">from</span> collections <span class="kw">import</span> deque
+ 
+<span class="kw">def</span> <span class="fn">bfs</span>(graph, start):
+    visited = <span class="fn">set</span>([start])
+    queue   = deque([start])
+    order   = []
+    <span class="kw">while</span> queue:
+        node = queue.<span class="fn">popleft</span>()     <span class="cm"># FIFO — front first</span>
+        order.<span class="fn">append</span>(node)
+        <span class="kw">for</span> nb <span class="kw">in</span> graph[node]:
+            <span class="kw">if</span> nb <span class="kw">not in</span> visited:
+                visited.<span class="fn">add</span>(nb)   <span class="cm"># mark BEFORE enqueue!</span>
+                queue.<span class="fn">append</span>(nb)
+    <span class="kw">return</span> order
+ 
+<span class="kw">def</span> <span class="fn">dfs</span>(graph, node, visited=<span class="nm">None</span>):
+    <span class="kw">if</span> visited <span class="kw">is None</span>: visited = <span class="fn">set</span>()
+    visited.<span class="fn">add</span>(node)
+    <span class="kw">for</span> nb <span class="kw">in</span> graph[node]:
+        <span class="kw">if</span> nb <span class="kw">not in</span> visited:
+            <span class="fn">dfs</span>(graph, nb, visited)  <span class="cm"># recursion = implicit stack</span>
+    <span class="kw">return</span> visited`,
+    problems:[
+      {t:'Number of Islands (LC 200)',d:'Medium',h:'BFS/DFS from each unvisited land cell. Count how many times you start a search.'},
+      {t:'Word Ladder (LC 127)',d:'Hard',h:'BFS. Each word is a node, two words connected if they differ by 1 letter. BFS finds minimum transformations.'},
+      {t:'Course Schedule (Topological Sort, LC 207)',d:'Medium',h:'DFS with 3 states: unvisited, in-progress, done. If you hit in-progress again, there is a cycle.'},
+      {t:'Shortest Path in Binary Matrix (LC 1091)',d:'Medium',h:'BFS from top-left, 8 directions. Level of BFS = path length. Return when you reach bottom-right.'},
+    ],
+    insights:['Always mark visited WHEN you enqueue (BFS) or when you first visit (DFS), not later. Marking late causes duplicates.',
+      'BFS = level order traversal. Same algorithm used for binary trees!',
+      'DFS + backtracking is the foundation of all "find all combinations / permutations" problems.',
+      'For grids: BFS/DFS in 4 or 8 directions is extremely common in interviews.']}
+};
+ 
+function openMasterClass(key){
+  const d=MC[key];if(!d)return;
+  document.getElementById('mc-icon').textContent=d.icon;
+  document.getElementById('mc-algo-name').textContent=d.name;
+  document.getElementById('mc-xp-earned').textContent='+'+d.xp+' XP EARNED!';
+  document.getElementById('mc-content').innerHTML=`
+    <div class="mc-section">
+      <div class="mc-sec-title" style="color:var(--red2)">⚙️ HOW IT WORKS — STEP BY STEP</div>
+      ${d.steps.map(s=>`<div class="mc-step">
+        <div class="mc-step-num" style="color:${s.col};border-color:${s.col}">${s.n}</div>
+        <div class="mc-step-txt">${s.t}</div>
+      </div>`).join('')}
+      <div style="padding:10px 14px;background:rgba(255,255,255,.03);border-left:3px solid var(--purple2);margin-top:8px;font-size:.83rem;color:var(--dim);font-weight:500">${d.complexity}</div>
+    </div>
+    <div class="mc-section">
+      <div class="mc-sec-title" style="color:var(--green2)">💻 CODE — COPY THIS</div>
+      <div class="mc-code">${d.code}</div>
+    </div>
+    <div class="mc-section">
+      <div class="mc-sec-title" style="color:var(--coin)">🏆 LEETCODE PROBLEMS</div>
+      ${d.problems.map(p=>`<div class="mc-problem">
+        <div class="mc-problem-title">${p.t}</div>
+        <div class="mc-problem-meta">
+          <span class="${p.d==='Easy'?'diff-e':p.d==='Medium'?'diff-m':'diff-h'}">${p.d}</span>
+          <span>💡 ${p.h}</span>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div class="mc-section">
+      <div class="mc-sec-title" style="color:var(--blue2)">🧠 KEY INSIGHTS</div>
+      ${d.insights.map(ins=>`<div class="mc-insight"><div class="mc-insight-icon">💡</div><div class="mc-insight-txt">${ins}</div></div>`).join('')}
+    </div>
+    <div style="text-align:center;padding:8px 0 4px">
+      <button class="q-close" onclick="closeMasterClass();openQuiz('${key==='rbt'?'rbt':key==='trie'?'trie':'graph'}')">TEST YOUR KNOWLEDGE 🧠</button>
+    </div>`;
+  document.getElementById('mc-overlay').classList.add('open');
+  gainXP(d.xp,key+' master class');
+}
+function closeMasterClass(){document.getElementById('mc-overlay').classList.remove('open');}
+ 
+/* ═══════════════════════════════════════════════════════════
+   ████  RED-BLACK TREE GAME  ████
+   Predefined scenarios — show a broken tree, player fixes it
+═══════════════════════════════════════════════════════════ */
+const RED_C=0,BLK_C=1;
+// Each scenario: tree nodes + correct solution steps
+const RBT_SCENARIOS=[
+  { title:'SCENARIO 1 — RED-RED VIOLATION',
+    desc:'Node 20 is RED and its child 30 is also RED! Rule 3 says no two consecutive red nodes. Uncle 5 is RED → recolour!',
+    hint:'Uncle (5) is RED → Case 1: Recolour parent 20 and uncle 5 to BLACK, grandparent 10 to RED.',
+    tree:{
+      nodes:[
+        {id:'A',val:10,color:BLK_C,x:340,y:60,left:'B',right:'C',parent:null},
+        {id:'B',val:20,color:RED_C,x:200,y:140,left:'D',right:'E',parent:'A'},
+        {id:'C',val:5,color:RED_C,x:480,y:140,left:null,right:null,parent:'A'},
+        {id:'D',val:15,color:BLK_C,x:120,y:220,left:null,right:null,parent:'B'},
+        {id:'E',val:30,color:RED_C,x:280,y:220,left:null,right:null,parent:'B'},
+      ],
+      violations:['B','E'], // these two reds are consecutive
+      solution:'recolor_case1', // colour B→BLK, C→BLK, A→RED (then root→BLK)
+      solutionDesc:'Click node 20 (or 30), then click RECOLOR. Uncle 5 is RED — Case 1 fix!',
+    }
+  },
+  { title:'SCENARIO 2 — LEFT-RIGHT ZIGZAG',
+    desc:'Node 20 (RED) has child 25 (RED). Uncle 35 is BLACK. The path bends right-left — a zigzag! We need Case 2 then Case 3.',
+    hint:'Uncle is BLACK and path zigzags (10→20→25 bends). Case 2: Rotate LEFT on node 20. Then Case 3: Rotate RIGHT on grandparent 30.',
+    tree:{
+      nodes:[
+        {id:'A',val:30,color:BLK_C,x:340,y:60,left:'B',right:'C',parent:null},
+        {id:'B',val:20,color:RED_C,x:200,y:140,left:'D',right:'E',parent:'A'},
+        {id:'C',val:35,color:BLK_C,x:480,y:140,left:null,right:null,parent:'A'},
+        {id:'D',val:10,color:BLK_C,x:120,y:220,left:null,right:null,parent:'B'},
+        {id:'E',val:25,color:RED_C,x:280,y:220,left:null,right:null,parent:'B'},
+      ],
+      violations:['B','E'],
+      solution:'case2_case3_left',
+      solutionDesc:'Click node 20, then ROT LEFT (Case 2). Then click grandparent 30, then ROT RIGHT (Case 3).',
+    }
+  },
+  { title:'SCENARIO 3 — RIGHT-RIGHT STRAIGHT',
+    desc:'Node 40 (RED) has child 50 (RED). Uncle 10 is BLACK. Path is straight right-right — Case 3 only!',
+    hint:'Uncle (10) is BLACK, path is straight right-right. Case 3: Select grandparent 30, then ROT LEFT. Swap colours.',
+    tree:{
+      nodes:[
+        {id:'A',val:30,color:BLK_C,x:340,y:60,left:'B',right:'C',parent:null},
+        {id:'B',val:10,color:BLK_C,x:200,y:140,left:null,right:null,parent:'A'},
+        {id:'C',val:40,color:RED_C,x:480,y:140,left:'D',right:'E',parent:'A'},
+        {id:'D',val:35,color:BLK_C,x:380,y:220,left:null,right:null,parent:'C'},
+        {id:'E',val:50,color:RED_C,x:560,y:220,left:null,right:null,parent:'C'},
+      ],
+      violations:['C','E'],
+      solution:'case3_left',
+      solutionDesc:'Click node 30 (grandparent), then ROT LEFT. Then recolour 40→BLACK, 30→RED.',
+    }
+  },
+  { title:'SCENARIO 4 — MULTIPLE VIOLATIONS',
+    desc:'Node 15 (RED) and its parent 20 (RED) violate Rule 3. Uncle 35 is also RED — Case 1 applies, then we need to check upward!',
+    hint:'Both uncle 35 and parent 20 are RED. Case 1: recolour parent 20 + uncle 35 → BLACK, grandparent 30 → RED. Then root must be BLACK!',
+    tree:{
+      nodes:[
+        {id:'A',val:30,color:BLK_C,x:340,y:60,left:'B',right:'C',parent:null},
+        {id:'B',val:20,color:RED_C,x:200,y:140,left:'D',right:'E',parent:'A'},
+        {id:'C',val:35,color:RED_C,x:480,y:140,left:null,right:null,parent:'A'},
+        {id:'D',val:10,color:BLK_C,x:120,y:220,left:null,right:null,parent:'B'},
+        {id:'E',val:15,color:RED_C,x:280,y:220,left:null,right:null,parent:'B'},
+      ],
+      violations:['B','E'],
+      solution:'recolor_case1_up',
+      solutionDesc:'Recolour nodes 20 and 35 to BLACK, 30 to RED. Since 30 is root, make it BLACK.',
+    }
+  },
+  { title:'SCENARIO 5 — FINAL BOSS',
+    desc:'Newly inserted node 45 (RED) violates with parent 40 (RED). Uncle 20 is BLACK. Right-right straight line — Case 3!',
+    hint:'Uncle (20) is BLACK. Right-right shape: 30→40→45. Select grandparent 30, rotate LEFT, swap colours.',
+    tree:{
+      nodes:[
+        {id:'A',val:30,color:BLK_C,x:340,y:60,left:'B',right:'C',parent:null},
+        {id:'B',val:20,color:BLK_C,x:200,y:140,left:null,right:null,parent:'A'},
+        {id:'C',val:40,color:RED_C,x:480,y:140,left:'D',right:'E',parent:'A'},
+        {id:'D',val:35,color:BLK_C,x:380,y:220,left:null,right:null,parent:'C'},
+        {id:'E',val:45,color:RED_C,x:560,y:220,left:null,right:null,parent:'C'},
+      ],
+      violations:['C','E'],
+      solution:'case3_left',
+      solutionDesc:'Select node 30, ROT LEFT. Then recolour: 40→BLACK, 30→RED.',
+    }
+  },
+];
+ 
+let rbtScenarioIdx=0,rbtSelectedNode=null,rbtMoves=0,rbtScoreVal=0,rbtLives=3;
+let rbtCurrentNodes=[];// mutable copy of current scenario nodes
+ 
+function rbtInitGame(){
+  rbtScenarioIdx=0;rbtScoreVal=0;rbtLives=3;rbtMoves=0;
+  rbtBuildProgressDots();
+  rbtLoadScenario();
+}
+ 
+function rbtBuildProgressDots(){
+  const el=document.getElementById('rbt-sp');
+  el.innerHTML=RBT_SCENARIOS.map((_,i)=>
+    `<div class="sp-dot${i===rbtScenarioIdx?' current':i<rbtScenarioIdx?' done':''}" id="sp-${i}"></div>`
+  ).join('');
+}
+ 
+function rbtUpdateDots(){
+  RBT_SCENARIOS.forEach((_,i)=>{
+    const d=document.getElementById('sp-'+i);if(!d)return;
+    d.className='sp-dot'+(i===rbtScenarioIdx?' current':i<rbtScenarioIdx?' done':'');
+  });
+}
+ 
+function rbtLoadScenario(){
+  if(rbtScenarioIdx>=RBT_SCENARIOS.length){rbtGameWin();return;}
+  const sc=RBT_SCENARIOS[rbtScenarioIdx];
+  // deep copy nodes
+  rbtCurrentNodes=sc.tree.nodes.map(n=>({...n}));
+  rbtSelectedNode=null;
+  document.getElementById('rbt-selected').textContent='none';
+  document.getElementById('rbt-s-title').textContent=sc.title;
+  document.getElementById('rbt-s-desc').textContent=sc.desc;
+  document.getElementById('rbt-lives').textContent='❤️'.repeat(rbtLives);
+  document.getElementById('rbt-score').textContent=rbtScoreVal;
+  setProg('rbt',Math.round(rbtScenarioIdx/RBT_SCENARIOS.length*100));
+  setBubble('rbt','Find the red-red violation! Nodes painted yellow have the violation. Select a node and use the controls to fix it.');
+  document.getElementById('rbt-log').innerHTML='';
+  log('rbt',sc.solutionDesc||'Analyse the violation and apply the correct fix.','hi');
+  rbtUpdateDots();
+  rbtDraw();
+  setStatus('rbt','Scenario '+(rbtScenarioIdx+1)+' / '+RBT_SCENARIOS.length);
+}
+ 
+function rbtDraw(hlViol=true){
+  const svg=document.getElementById('rbt-svg');
+  const W=svg.clientWidth||680,H=svg.clientHeight||480;
+  document.getElementById('rbt-edges-g').innerHTML='';
+  document.getElementById('rbt-nodes-g').innerHTML='';
+  const sc=RBT_SCENARIOS[rbtScenarioIdx];
+  const viols=sc?sc.tree.violations:[];
+ 
+  // draw edges first
+  rbtCurrentNodes.forEach(n=>{
+    ['left','right'].forEach(side=>{
+      if(n[side]){
+        const child=rbtCurrentNodes.find(x=>x.id===n[side]);
+        if(child){
+          const line=document.createElementNS('http://www.w3.org/2000/svg','path');
+          line.setAttribute('d',`M${n.x} ${n.y} L${child.x} ${child.y}`);
+          line.setAttribute('class','rbt-edge');line.setAttribute('stroke-width','2');
+          document.getElementById('rbt-edges-g').appendChild(line);
+        }
+      }
+    });
+  });
+ 
+  // draw nodes
+  rbtCurrentNodes.forEach(n=>{
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('transform',`translate(${n.x},${n.y})`);
+    const isViol=hlViol&&viols.includes(n.id);
+    const isSel=rbtSelectedNode===n.id;
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('r','26');
+    c.setAttribute('class',n.color===RED_C?'rbt-node-red':'rbt-node-blk');
+    if(isViol){c.classList.add('hl-viol');c.style.filter='url(#fr-y)';}
+    else if(isSel){c.classList.add('hl-sel');c.style.filter='url(#fr-b)';}
+    c.style.cursor='pointer';c.style.transition='fill .3s,stroke .3s';
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('class','rbt-lbl');t.textContent=n.val;
+    g.appendChild(c);g.appendChild(t);
+    g.addEventListener('click',()=>rbtSelectNode(n.id));
+    document.getElementById('rbt-nodes-g').appendChild(g);
+  });
+}
+ 
+function rbtSelectNode(id){
+  rbtSelectedNode=id;
+  const n=rbtCurrentNodes.find(x=>x.id===id);
+  document.getElementById('rbt-selected').textContent=n?n.val+' ('+(n.color===RED_C?'RED':'BLACK')+')':'none';
+  rbtDraw();
+  log('rbt','Selected node '+n.val,'hi');
+}
+ 
+function rbtAction(type){
+  if(!rbtSelectedNode){setBubble('rbt','Click a node first to select it!');return;}
+  const n=rbtCurrentNodes.find(x=>x.id===rbtSelectedNode);
+  if(!n){return;}
+  rbtMoves++;
+  log('rbt','Applied: '+type.toUpperCase()+' on node '+n.val,'hi');
+ 
+  if(type==='recolor'){
+    n.color=n.color===RED_C?BLK_C:RED_C;
+    setBubble('rbt','Recoloured node '+n.val+' to '+(n.color===RED_C?'RED':'BLACK')+'. Check if violation is resolved!');
+    earnBadge('rbt_fix1');
+  }else if(type==='rotL'){
+    // simple visual rotation: swap node x and y coordinates with right child
+    const rightChild=rbtCurrentNodes.find(x=>x.id===n.right);
+    if(!rightChild){setBubble('rbt','Cannot rotate left — no right child!');return;}
+    const tmpX=n.x,tmpY=n.y;
+    n.x=rightChild.x;n.y=rightChild.y;
+    rightChild.x=tmpX;rightChild.y=tmpY;
+    setBubble('rbt','Rotated LEFT on node '+n.val+'. The right child took its place!');
+    earnBadge('rbt_fix1');
+  }else if(type==='rotR'){
+    const leftChild=rbtCurrentNodes.find(x=>x.id===n.left);
+    if(!leftChild){setBubble('rbt','Cannot rotate right — no left child!');return;}
+    const tmpX=n.x,tmpY=n.y;
+    n.x=leftChild.x;n.y=leftChild.y;
+    leftChild.x=tmpX;leftChild.y=tmpY;
+    setBubble('rbt','Rotated RIGHT on node '+n.val+'. The left child took its place!');
+    earnBadge('rbt_fix1');
+  }
+  rbtDraw(false);
+}
+ 
+function rbtShowHint(){
+  const sc=RBT_SCENARIOS[rbtScenarioIdx];
+  setBubble('rbt',sc.hint||'Check the highlighted nodes for the violation!');
+  log('rbt','💡 Hint: '+sc.hint,'hi');
+  toast('Hint: -5 score');
+  rbtScoreVal=Math.max(0,rbtScoreVal-5);
+  document.getElementById('rbt-score').textContent=rbtScoreVal;
+}
+ 
+function rbtCheckSolution(){
+  // Simple check: are there any two consecutive red nodes?
+  let valid=true,msg='';
+  for(const n of rbtCurrentNodes){
+    if(n.color===RED_C){
+      const parent=rbtCurrentNodes.find(x=>x.id===n.parent);
+      if(parent&&parent.color===RED_C){valid=false;msg='Still a red-red violation between '+parent.val+' and '+n.val+'!';break;}
+    }
+  }
+  // Root must be black
+  const root=rbtCurrentNodes.find(x=>!x.parent);
+  if(root&&root.color===RED_C){valid=false;msg='Root node '+root.val+' must be BLACK!';}
+ 
+  if(valid){
+    const pts=Math.max(10,30-rbtMoves*3);
+    rbtScoreVal+=pts;
+    document.getElementById('rbt-score').textContent=rbtScoreVal;
+    setBubble('rbt','PERFECT! All Red-Black rules are satisfied! +'+pts+' points!');
+    log('rbt','✓ Scenario solved! +'+pts+' points','ok');
+    setStatus('rbt','Solved!');
+    G.rbtWins=(G.rbtWins||0)+1;gSave();
+    rbtUpdateDots();
+    confetti();
+    earnBadge('rbt_fix1');
+    if(G.rbtWins>=5)earnBadge('rbt_all');
+    if(rbtMoves<=2)earnBadge('rbt_perfect');
+    gainXP(25,'rbt scenario');
+    setTimeout(()=>{
+      rbtScenarioIdx++;rbtMoves=0;
+      if(rbtScenarioIdx>=RBT_SCENARIOS.length){rbtGameWin();}
+      else{rbtLoadScenario();toast('Next scenario! ▶');}
+    },2000);
+  }else{
+    rbtLives--;
+    document.getElementById('rbt-lives').textContent='❤️'.repeat(Math.max(0,rbtLives));
+    setBubble('rbt','Not quite! '+msg+' Try again!');
+    log('rbt','✗ '+msg,'err');
+    if(rbtLives<=0){
+      toast('Out of lives! Restarting scenario...');
+      setTimeout(()=>{rbtLives=3;rbtLoadScenario();},1800);
+    }
+  }
+}
+ 
+function rbtNextScenario(){
+  rbtScenarioIdx=Math.min(rbtScenarioIdx+1,RBT_SCENARIOS.length-1);
+  rbtMoves=0;rbtLoadScenario();toast('Skipped to next scenario');
+}
+ 
+function rbtGameWin(){
+  setProg('rbt',100);
+  setStatus('rbt','ALL SCENARIOS COMPLETE!');
+  setBubble('rbt','INCREDIBLE! You completed all 5 Red-Black Tree scenarios! You have mastered balancing, rotations, and recolouring. Opening Master Class...');
+  log('rbt','🏆 ALL 5 SCENARIOS COMPLETE!','ok');
+  gainXP(50,'rbt game complete');confetti();
+  earnBadge('rbt_all');
+  G.algos=(G.algos||0)+1;gSave();
+  setTimeout(()=>openMasterClass('rbt'),2000);
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   ████  TRIE GAME  ████
+═══════════════════════════════════════════════════════════ */
+const TRIE_LEVELS=[
+  {words:['CAT','CAR','CAN'],letters:'C A T R N O'.split(' '),
+   title:'LEVEL 1 — SHARED PREFIX CA',
+   hint:'CAT, CAR, and CAN all share the prefix CA. Watch how the nodes split only at the third letter!'},
+  {words:['BAT','BAD','BALL'],letters:'B A T D L'.split(' '),
+   title:'LEVEL 2 — PREFIX BA',
+   hint:'BAT, BAD, BALL — all share BA. BALL needs an extra L node!'},
+  {words:['APP','APPLE','APPLICATION'],letters:'A P L I C T O N'.split(' '),
+   title:'LEVEL 3 — LONG SHARED PREFIXES',
+   hint:'APP is a prefix of APPLE which is a prefix of APPLICATION. A Trie only adds new nodes where words diverge!'},
+];
+ 
+let trieLevel=0,trieCurrentWord=[],trieInserted=[],trieRoot2=null,trieNodeId2=0;
+let trieScore=0,trieSearchMode=false;
+ 
+class TNode2{constructor(ch=''){this.ch=ch;this.children={};this.isEnd=false;this.id=trieNodeId2++;this.x=0;this.y=0;}}
+ 
+function trieInitGame(){
+  trieLevel=0;trieScore=0;trieInserted=[];trieCurrentWord=[];
+  trieRoot2=new TNode2('');
+  trieInitLevel();
+}
+ 
+function trieInitLevel(){
+  if(trieLevel>=TRIE_LEVELS.length){trieGameWin();return;}
+  const lv=TRIE_LEVELS[trieLevel];
+  trieInserted=[];trieCurrentWord=[];
+  document.getElementById('trie-words-done').textContent='0/'+lv.words.length;
+  document.getElementById('trie-score').textContent=trieScore;
+  setProg('trie',Math.round(trieLevel/TRIE_LEVELS.length*100));
+ 
+  // build letter bank
+  const bank=document.getElementById('trie-letter-bank');
+  bank.innerHTML=lv.letters.map(l=>
+    `<div class="letter-tile" data-letter="${l}" onclick="trieAddLetter('${l}',this)">${l}</div>`
+  ).join('');
+ 
+  // target word chips
+  const chips=document.getElementById('trie-target-chips');
+  chips.innerHTML=lv.words.map(w=>`<div class="wl-chip" id="tw-${w}">${w}</div>`).join('');
+ 
+  // clear word display
+  document.getElementById('trie-word-display').innerHTML='<span class="wd-placeholder">click letters above...</span>';
+  document.getElementById('trie-log').innerHTML='';
+  log('trie',lv.title,'hi');
+  log('trie',lv.hint,'hi');
+  setBubble('trie','Build the words shown above! Click letters to form each word, then press INSERT. Watch how shared prefixes save nodes!');
+  setStatus('trie',lv.title);
+ 
+  // reset trie for this level
+  trieRoot2=new TNode2('');trieNodeId2=0;
+  trieDraw2();
+}
+ 
+function trieAddLetter(l,btn){
+  trieCurrentWord.push(l);
+  updateWordDisplay();
+}
+ 
+function trieClearWord(){
+  trieCurrentWord=[];updateWordDisplay();
+  // reset letter tiles
+  document.querySelectorAll('.letter-tile').forEach(t=>t.classList.remove('used'));
+}
+ 
+function updateWordDisplay(){
+  const el=document.getElementById('trie-word-display');
+  if(!trieCurrentWord.length){
+    el.innerHTML='<span class="wd-placeholder">click letters above...</span>';return;
+  }
+  el.innerHTML=trieCurrentWord.map((l,i)=>
+    `<div class="wd-slot" onclick="trieRemoveLetter(${i})">${l}</div>`
+  ).join('');
+}
+ 
+function trieRemoveLetter(idx){
+  trieCurrentWord.splice(idx,1);updateWordDisplay();
+}
+ 
+async function trieSubmitWord(){
+  const word=trieCurrentWord.join('');
+  if(!word){setBubble('trie','Build a word first!');return;}
+  const lv=TRIE_LEVELS[trieLevel];
+ 
+  if(!lv.words.includes(word)){
+    setBubble('trie','"'+word+'" is not a target word! Target words: '+lv.words.join(', '));
+    log('trie','"'+word+'" is not in the target list','err');
+    toast('Wrong word! Try: '+lv.words.join(', '));
+    return;
+  }
+  if(trieInserted.includes(word)){
+    setBubble('trie','"'+word+'" is already inserted!');return;
+  }
+ 
+  // Insert into trie with animation
+  let node=trieRoot2;
+  let sharedNodes=0,newNodes=0;
+  for(let i=0;i<word.length;i++){
+    const ch=word[i];
+    const existed=!!node.children[ch];
+    if(!existed){node.children[ch]=new TNode2(ch);newNodes++;}
+    else sharedNodes++;
+    node=node.children[ch];
+    trieDraw2(node.id,'insert');
+    await sleep(400);
+  }
+  node.isEnd=true;
+  trieInserted.push(word);
+  G.trieWords=(G.trieWords||0)+1;gSave();
+ 
+  trieDraw2();
+  log('trie','Inserted "'+word+'" — shared '+sharedNodes+' nodes, created '+newNodes+' new nodes','ok');
+  setBubble('trie','Inserted "'+word+'"! '+sharedNodes+' nodes were shared with existing words (that\'s the Trie magic!), '+newNodes+' new nodes created.');
+  document.getElementById('trie-score').textContent=++trieScore;
+  document.getElementById('trie-words-done').textContent=trieInserted.length+'/'+lv.words.length;
+ 
+  // mark chip done
+  const chip=document.getElementById('tw-'+word);
+  if(chip)chip.classList.add('done');
+ 
+  if(sharedNodes>0)earnBadge('trie_prefix');
+  earnBadge('trie_5words');
+  gainXP(15,'trie insert');
+ 
+  trieClearWord();
+ 
+  if(trieInserted.length>=lv.words.length){
+    setTimeout(()=>{
+      setBubble('trie','Level complete! All words inserted! Moving to next level...');
+      confetti();
+      gainXP(20,'trie level');
+      log('trie','LEVEL COMPLETE!','ok');
+      trieLevel++;
+      setTimeout(()=>trieInitLevel(),2000);
+    },800);
+  }
+}
+ 
+async function trieSearchWord(){
+  const word=trieCurrentWord.join('');
+  if(!word){setBubble('trie','Build a word to search for!');return;}
+  trieClearWord();
+ 
+  let node=trieRoot2;let found=true;
+  for(const ch of word){
+    if(!node.children[ch]){found=false;break;}
+    node=node.children[ch];
+    trieDraw2(node.id,'search');
+    await sleep(350);
+  }
+  if(found&&node.isEnd){
+    setBubble('trie','"'+word+'" FOUND in the Trie! Searched in only '+word.length+' steps — O(length) regardless of how many words are stored!');
+    log('trie','"'+word+'" found!','ok');
+    trieDraw2(node.id,'found');
+    gainXP(10,'trie search');
+  }else if(found){
+    setBubble('trie','"'+word+'" is a prefix but NOT a complete word in the Trie. The path exists but no end-of-word flag!');
+    log('trie','"'+word+'" is only a prefix','hi');
+  }else{
+    setBubble('trie','"'+word+'" NOT FOUND. The path breaks — no node exists for one of its characters.');
+    log('trie','"'+word+'" not found','err');
+  }
+}
+ 
+function trieDraw2(hlId=null,hlType=null){
+  const svg=document.getElementById('trie-svg');
+  const W=svg.clientWidth||680,H=svg.clientHeight||460;
+  document.getElementById('trie-edges-g').innerHTML='';
+  document.getElementById('trie-nodes-g').innerHTML='';
+  if(!trieRoot2)return;
+ 
+  function depth(n){if(!Object.keys(n.children).length)return 0;return 1+Math.max(...Object.values(n.children).map(depth));}
+  const d=depth(trieRoot2);
+  const lh=Math.min(80,(H-60)/Math.max(d+1,1));
+ 
+  function assignPos(n,x,y,spread){
+    n.x=x;n.y=y;
+    const kids=Object.values(n.children);if(!kids.length)return;
+    const half=(kids.length-1)/2;
+    kids.forEach((c,i)=>{assignPos(c,x+(i-half)*Math.max(50,spread/Math.max(kids.length,1)),y+lh,spread*.7);});
+  }
+  assignPos(trieRoot2,W/2,40,W*.85);
+ 
+  function drawNode(n){
+    for(const ch in n.children){
+      const child=n.children[ch];
+      const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',n.x);line.setAttribute('y1',n.y);
+      line.setAttribute('x2',child.x);line.setAttribute('y2',child.y);
+      const isHl=child.id===hlId;
+      line.setAttribute('class','trie-edge'+(isHl?' hl':''));
+      document.getElementById('trie-edges-g').appendChild(line);
+      // char label on edge
+      const mx=(n.x+child.x)/2,my=(n.y+child.y)/2;
+      const ct=document.createElementNS('http://www.w3.org/2000/svg','text');
+      ct.setAttribute('x',mx+8);ct.setAttribute('y',my);ct.setAttribute('class','trie-char');
+      ct.style.fill=isHl?'var(--green2)':'rgba(52,152,219,.8)';
+      ct.textContent=ch;
+      document.getElementById('trie-edges-g').appendChild(ct);
+      drawNode(child);
+    }
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('transform',`translate(${n.x},${n.y})`);
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('r',n===trieRoot2?'16':'19');
+    const isHl=n.id===hlId;
+    const hlCls=hlType==='insert'?'hl-insert':hlType==='search'||hlType==='found'?'hl-search':'';
+    c.setAttribute('class','trie-node-circle'+(n.isEnd?' eow':'')+(isHl&&hlCls?' '+hlCls:''));
+    c.style.transition='fill .3s,stroke .3s';
+    if(n.isEnd){const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('r','4');dot.setAttribute('cy','-13');dot.setAttribute('class','eow-dot');g.appendChild(dot);}
+    const lbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lbl.setAttribute('class','trie-lbl');
+    lbl.style.fontSize=n===trieRoot2?'9px':'12px';
+    lbl.style.fill=n===trieRoot2?'rgba(255,255,255,.4)':'white';
+    lbl.textContent=n===trieRoot2?'ROOT':n.ch;
+    g.appendChild(c);g.appendChild(lbl);
+    document.getElementById('trie-nodes-g').appendChild(g);
+  }
+  drawNode(trieRoot2);
+}
+ 
+function trieReset(){trieLevel=0;trieInserted=[];trieCurrentWord=[];trieRoot2=new TNode2('');trieInitLevel();}
+function trieGameWin(){
+  earnBadge('trie_complete');gainXP(50,'trie game complete');confetti();
+  setBubble('trie','AMAZING! You mastered all Trie levels! Opening Master Class...');
+  G.algos=(G.algos||0)+1;gSave();
+  setTimeout(()=>openMasterClass('trie'),2000);
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   ████  GRAPH GAME  ████
+   Player must click nodes in correct BFS or DFS order
+═══════════════════════════════════════════════════════════ */
+const GRAPH_LEVELS=[
+  { title:'LEVEL 1 — BFS BASICS',
+    algo:'bfs',
+    desc:'Click nodes in BFS order starting from node A (green). Visit all neighbours of a node before going deeper.',
+    nodes:[
+      {id:'A',x:340,y:120,adj:['B','C']},
+      {id:'B',x:180,y:240,adj:['A','D','E']},
+      {id:'C',x:500,y:240,adj:['A','F']},
+      {id:'D',x:100,y:360,adj:['B']},
+      {id:'E',x:260,y:360,adj:['B']},
+      {id:'F',x:500,y:360,adj:['C']},
+    ],
+    start:'A',
+    correctBFS:['A','B','C','D','E','F'],
+    bubble:'BFS level 1! Start from A (green). Visit A, then all neighbours of A (B and C), then neighbours of B not yet visited (D, E), then neighbours of C not yet visited (F).',
+  },
+  { title:'LEVEL 2 — DFS BASICS',
+    algo:'dfs',
+    desc:'Click nodes in DFS order starting from A. Go as deep as possible before backtracking!',
+    nodes:[
+      {id:'A',x:340,y:100,adj:['B','C']},
+      {id:'B',x:200,y:220,adj:['A','D','E']},
+      {id:'C',x:480,y:220,adj:['A','F']},
+      {id:'D',x:120,y:340,adj:['B']},
+      {id:'E',x:280,y:340,adj:['B']},
+      {id:'F',x:480,y:340,adj:['C']},
+    ],
+    start:'A',
+    correctBFS:['A','B','D','E','C','F'],
+    bubble:'DFS level! Start at A. DFS dives deep: go to B, then D (deepest from B), backtrack, go E, backtrack to A, go C, then F.',
+  },
+  { title:'LEVEL 3 — BFS WITH MORE NODES',
+    algo:'bfs',
+    desc:'Larger graph! BFS from A. Think: which nodes are 1 step away? Then 2 steps? Then 3 steps?',
+    nodes:[
+      {id:'A',x:340,y:80,adj:['B','C','D']},
+      {id:'B',x:160,y:200,adj:['A','E']},
+      {id:'C',x:340,y:200,adj:['A','F']},
+      {id:'D',x:520,y:200,adj:['A','G']},
+      {id:'E',x:160,y:340,adj:['B']},
+      {id:'F',x:340,y:340,adj:['C']},
+      {id:'G',x:520,y:340,adj:['D']},
+    ],
+    start:'A',
+    correctBFS:['A','B','C','D','E','F','G'],
+    bubble:'BFS level 3! A has 3 neighbours: B, C, D. All are at distance 1, so visit them all before their children. Then E (from B), F (from C), G (from D).',
+  },
+  { title:'LEVEL 4 — DFS CHALLENGE',
+    algo:'dfs',
+    desc:'DFS on a larger graph. Remember: always go deeper before trying another branch!',
+    nodes:[
+      {id:'A',x:340,y:80,adj:['B','C']},
+      {id:'B',x:180,y:200,adj:['A','D']},
+      {id:'C',x:500,y:200,adj:['A','E','F']},
+      {id:'D',x:100,y:330,adj:['B','G']},
+      {id:'E',x:420,y:330,adj:['C']},
+      {id:'F',x:580,y:330,adj:['C']},
+      {id:'G',x:100,y:440,adj:['D']},
+    ],
+    start:'A',
+    correctBFS:['A','B','D','G','C','E','F'],
+    bubble:'DFS level 4! From A: go to B (first neighbour). From B: go to D. From D: go to G (dead end). Backtrack to D, B, A. Now go to C. From C: go to E, then F.',
+  },
+];
+ 
+let graphLevelIdx=0,graphClickOrder=[],graphMistakes=0,graphScore2=0,graphVisited=new Set();
+ 
+function graphInitGame(){graphLevelIdx=0;graphScore2=0;graphLoadLevel();}
+ 
+function graphLoadLevel(){
+  if(graphLevelIdx>=GRAPH_LEVELS.length){graphGameWin();return;}
+  const lv=GRAPH_LEVELS[graphLevelIdx];
+  graphClickOrder=[];graphMistakes=0;graphVisited=new Set();
+  document.getElementById('graph-algo-name').textContent=lv.algo.toUpperCase()+' CHALLENGE — LEVEL '+(graphLevelIdx+1);
+  document.getElementById('graph-algo-desc').textContent=lv.desc;
+  document.getElementById('graph-lvl-title').textContent=lv.title;
+  document.getElementById('graph-lvl-desc').textContent=lv.desc;
+  document.getElementById('graph-mistakes').textContent=0;
+  document.getElementById('graph-score').textContent=graphScore2;
+  document.getElementById('graph-ds-lbl').textContent=lv.algo==='bfs'?'Queue:':'Stack:';
+  document.getElementById('graph-click-order').innerHTML='';
+  document.getElementById('graph-correct-so-far').textContent='—';
+  document.getElementById('graph-expected-next').textContent='?';
+  setProg('graph',Math.round(graphLevelIdx/GRAPH_LEVELS.length*100));
+  setBubble('graph',lv.bubble);
+  document.getElementById('graph-log').innerHTML='';
+  log('graph',lv.title,'hi');
+  log('graph','Expected order: '+lv.correctBFS.join(' → '));
+  setStatus('graph','Click the START node to begin!');
+  graphDraw();
+}
+ 
+function graphDraw(){
+  const lv=GRAPH_LEVELS[graphLevelIdx];
+  if(!lv)return;
+  const edgesG=document.getElementById('graph-edges-g');
+  const nodesG=document.getElementById('graph-nodes-g');
+  edgesG.innerHTML='';nodesG.innerHTML='';
+ 
+  // draw edges
+  const drawn=new Set();
+  lv.nodes.forEach(n=>{
+    n.adj.forEach(nbId=>{
+      const key=[n.id,nbId].sort().join('-');
+      if(!drawn.has(key)){
+        drawn.add(key);
+        const nb=lv.nodes.find(x=>x.id===nbId);if(!nb)return;
+        const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1',n.x);line.setAttribute('y1',n.y);
+        line.setAttribute('x2',nb.x);line.setAttribute('y2',nb.y);
+        const isActive=graphVisited.has(n.id)&&graphVisited.has(nbId);
+        line.setAttribute('class',isActive?'ge-active':'ge-normal');
+        edgesG.appendChild(line);
+      }
+    });
+  });
+ 
+  // draw nodes
+  lv.nodes.forEach(n=>{
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('transform',`translate(${n.x},${n.y})`);
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('r','26');
+    const isStart=n.id===lv.start;
+    const isVisited=graphVisited.has(n.id);
+    const isNext=!isVisited&&graphClickOrder.length>0&&lv.correctBFS[graphClickOrder.length]===n.id;
+    let cls='gn-unvisited';
+    if(isStart&&graphClickOrder.length===0)cls='gn-start';
+    else if(isVisited){cls='gn-visited';if(isStart)c.style.filter='url(#fg-g)';}
+    else if(isNext)c.style.filter='url(#fg-y)';
+    c.setAttribute('class',cls);
+    c.style.cursor='pointer';
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('class','gn-lbl');t.textContent=n.id;
+    g.appendChild(c);g.appendChild(t);
+    g.addEventListener('click',()=>graphNodeClick(n.id));
+    nodesG.appendChild(g);
+  });
+ 
+  // update queue/stack display
+  const remaining=lv.correctBFS.slice(graphClickOrder.length);
+  const dsItems=document.getElementById('graph-ds-items');
+  if(!remaining.length)dsItems.innerHTML='<span style="font-family:var(--font);font-size:6.5px;color:var(--dim)">empty</span>';
+  else dsItems.innerHTML=remaining.slice(0,6).map(n=>`<div class="ds-cell ${lv.algo==='dfs'?'stk':''}">${n}</div>`).join('');
+}
+ 
+function graphNodeClick(nodeId){
+  const lv=GRAPH_LEVELS[graphLevelIdx];
+  const expected=lv.correctBFS[graphClickOrder.length];
+ 
+  if(nodeId===expected){
+    graphClickOrder.push(nodeId);
+    graphVisited.add(nodeId);
+ 
+    // update co display
+    const coEl=document.getElementById('graph-click-order');
+    const el=document.createElementNS?document.createElement('div'):null;
+    if(el){el.className='co-item';el.textContent=nodeId;coEl.appendChild(el);}
+ 
+    document.getElementById('graph-correct-so-far').textContent=graphClickOrder.join(' → ');
+    document.getElementById('graph-expected-next').textContent=graphClickOrder.length<lv.correctBFS.length?lv.correctBFS[graphClickOrder.length]:'✓ Done!';
+ 
+    log('graph','✓ '+nodeId+' — correct!','ok');
+    setStatus('graph',graphClickOrder.length+'/'+lv.correctBFS.length+' nodes visited');
+ 
+    if(graphClickOrder.length===lv.correctBFS.length){
+      // level complete
+      const pts=Math.max(20,50-graphMistakes*8);
+      graphScore2+=pts;
+      document.getElementById('graph-score').textContent=graphScore2;
+      setBubble('graph','PERFECT! '+lv.algo.toUpperCase()+' traversal complete! You visited '+lv.correctBFS.join(' → ')+'. +'+pts+' points!');
+      log('graph','LEVEL COMPLETE! +'+pts+' points','ok');
+      confetti();
+      gainXP(25,'graph level');
+      if(lv.algo==='bfs')earnBadge('graph_bfs');
+      if(lv.algo==='dfs')earnBadge('graph_dfs');
+      if(graphMistakes===0)earnBadge('graph_nomistakes');
+      G.graphWins=(G.graphWins||0)+1;gSave();
+      graphDraw();
+      setTimeout(()=>{graphLevelIdx++;graphLoadLevel();},2200);
+    }else{
+      graphDraw();
+    }
+  }else{
+    graphMistakes++;
+    document.getElementById('graph-mistakes').textContent=graphMistakes;
+    setBubble('graph','WRONG! Node '+nodeId+' is not next. Expected: '+expected+'. Remember — '+lv.algo.toUpperCase()+' visits nodes in a specific order!');
+    log('graph','✗ Wrong: '+nodeId+', expected '+expected,'err');
+    toast('Wrong! Expected '+expected);
+ 
+    // flash wrong node
+    const svg=document.getElementById('graph-svg');
+    const circles=svg.querySelectorAll('circle');
+    const lv2=GRAPH_LEVELS[graphLevelIdx];
+    const nodeData=lv2.nodes.find(n=>n.id===nodeId);
+    if(nodeData){
+      // temporary wrong highlight
+      setTimeout(()=>graphDraw(),600);
+    }
+  }
+}
+ 
+function graphRestart(){
+  graphClickOrder=[];graphMistakes=0;graphVisited=new Set();
+  document.getElementById('graph-click-order').innerHTML='';
+  document.getElementById('graph-correct-so-far').textContent='—';
+  document.getElementById('graph-expected-next').textContent='?';
+  document.getElementById('graph-mistakes').textContent=0;
+  setBubble('graph','Restarted! Click the green start node to begin again.');
+  graphDraw();
+}
+ 
+function graphNextLevel(){
+  graphLevelIdx=Math.min(graphLevelIdx+1,GRAPH_LEVELS.length-1);
+  graphLoadLevel();
+}
+ 
+function graphGameWin(){
+  setProg('graph',100);
+  setBubble('graph','OUTSTANDING! You mastered all graph traversal levels! BFS, DFS — you know them both! Opening Master Class...');
+  earnBadge('graph_dfs');earnBadge('graph_bfs');
+  gainXP(50,'graph game complete');confetti();
+  G.algos=(G.algos||0)+1;gSave();
+  setTimeout(()=>openMasterClass('graph'),2000);
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   PAGE LOAD
+═══════════════════════════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  // Enter key
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter')return;
+    if(!document.getElementById('auth-page').classList.contains('active'))return;
+    if(document.getElementById('form-login').style.display!=='none')doLogin();
+    else doSignup();
+  });
+  refreshBadges();
+});
+</script>
+</body>
+</html>
+<script>
+/* ════════════════════════════════════════════════════════
+   LEARN MODE — HOME SWITCHING
+════════════════════════════════════════════════════════ */
+function switchMode(mode){
+  ['game','learn'].forEach(m=>{
+    document.getElementById('mode-'+m+'-btn').classList.toggle('active',m===mode);
+    document.getElementById('mode-'+m+'-section').classList.toggle('active',m===mode);
+  });
+}
+function showLearn(ds){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  if(ds==='rbt'){document.getElementById('learn-rbt-page').classList.add('active');lrbtInit();}
+  else if(ds==='trie'){document.getElementById('learn-trie-page').classList.add('active');ltrieInit();}
+  else if(ds==='graph'){document.getElementById('learn-graph-page').classList.add('active');lgraphInit();}
+}
+// add learn routes to showGame
+const _origShowGame=window.showGame;
+window.showGame=function(id){
+  if(id==='learn-rbt'||id==='learn-trie'||id==='learn-graph'){
+    showLearn(id.replace('learn-',''));return;
+  }
+  _origShowGame(id);
+};
+ 
+/* ════════════════════════════════════════════════════════
+   SHARED LEARN HELPERS
+════════════════════════════════════════════════════════ */
+let llogCounts={rbt:0,trie:0,graph:0};
+function llog(key,txt,cls=''){
+  const el=document.getElementById('l'+key+'-log');if(!el)return;
+  llogCounts[key]=(llogCounts[key]||0)+1;
+  const d=document.createElement('div');d.className='llog-item'+(cls?' '+cls:'');
+  d.innerHTML=`<span class="llog-num">#${llogCounts[key]}</span>${txt}`;
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+  while(el.children.length>70)el.removeChild(el.firstChild);
+}
+function explain(key,html){
+  const el=document.getElementById('l'+key+'-explain');if(!el)return;
+  el.innerHTML=html;el.classList.add('active');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('active'),4000);
+}
+function lSleep(key){return new Promise(r=>setTimeout(r,+document.getElementById('l'+key+'-spd').value));}
+function lgDelay(){return+document.getElementById('lgraph-spd').value;}
+ 
+/* ════════════════════════════════════════════════════════
+   LEARN — RED-BLACK TREE
+   Full working RBT with dynamic explanations
+════════════════════════════════════════════════════════ */
+const LRED=0,LBLK=1;
+class LRBTNode{
+  constructor(v){this.v=v;this.c=LRED;this.l=null;this.r=null;this.p=null;this.nil=false;this.x=0;this.y=0;}
+}
+let lrbtRoot=null,lrbtNIL=null,lrbtRunning=false,lrbtSize=0;
+ 
+function lrbtInit(){
+  if(lrbtRoot!==null)return;
+  lrbtNIL={v:null,c:LBLK,l:null,r:null,p:null,nil:true,x:0,y:0};
+  lrbtNIL.p=lrbtNIL;lrbtNIL.l=lrbtNIL;lrbtNIL.r=lrbtNIL;
+  lrbtRoot=lrbtNIL;lrbtSize=0;
+  const lrbtInp=document.getElementById('lrbt-val');
+  if(lrbtInp&&!lrbtInp._ekBound){lrbtInp._ekBound=true;lrbtInp.addEventListener('keydown',e=>{if(e.key==='Enter')lrbtInsert();});}
+  explain('rbt','Welcome to Red-Black Tree Learn Mode! Insert any numbers and I will explain every step — comparisons, rotations, recolouring and why each happens.');
+  lrbtDraw();
+}
+ 
+function lrbtReset(){
+  if(lrbtRunning)return;
+  lrbtNIL={v:null,c:LBLK,l:null,r:null,p:null,nil:true,x:0,y:0};
+  lrbtNIL.p=lrbtNIL;lrbtNIL.l=lrbtNIL;lrbtNIL.r=lrbtNIL;
+  lrbtRoot=lrbtNIL;lrbtSize=0;llogCounts.rbt=0;
+  document.getElementById('lrbt-log').innerHTML='';
+  document.getElementById('lrbt-nodes').innerHTML='';
+  document.getElementById('lrbt-edges').innerHTML='';
+  document.getElementById('lrbt-stats').textContent='Nodes: 0 | Height: 0';
+  explain('rbt','Tree cleared! Insert numbers to start building the Red-Black Tree.');
+}
+ 
+async function lrbtRandom(){
+  if(lrbtRunning)return;lrbtReset();
+  const vals=[...new Set(Array.from({length:12},()=>Math.floor(Math.random()*90)+5))].slice(0,8);
+  explain('rbt','Inserting '+vals.length+' random values! Watch how the tree rebalances after each insert.');
+  for(const v of vals){await lrbtInsertVal(v);await sleep(300);}
+}
+ 
+async function lrbtInsert(){
+  const inp=document.getElementById('lrbt-val');
+  const v=parseInt(inp.value);
+  if(isNaN(v)||v<1||v>9999){explain('rbt','<b class="hl-red">Enter a number between 1 and 9999!</b>');return;}
+  inp.value='';
+  await lrbtInsertVal(v);
+}
+ 
+async function lrbtInsertVal(val){
+  if(lrbtRunning)return;lrbtRunning=true;lrbtSize++;
+  llog('rbt',`━━ INSERT <b>${val}</b>  ━━`,'step');
+  explain('rbt',`<b>Inserting ${val}</b> into the Red-Black Tree.<br>Step 1: Walk from root using BST rule — <span class="hl-yellow">smaller values go LEFT, larger go RIGHT.</span>`);
+  await lSleep('rbt');
+ 
+  // Standard BST insert
+  const z=new LRBTNode(val);
+  z.l={v:null,c:LBLK,l:null,r:null,p:z,nil:true,x:0,y:0};
+  z.r={v:null,c:LBLK,l:null,r:null,p:z,nil:true,x:0,y:0};
+ 
+  let y=lrbtNIL,x=lrbtRoot;
+  while(!x.nil){
+    y=x;
+    if(val<x.v){
+      explain('rbt',`${val} &lt; ${x.v} → <span class="hl-green">go LEFT</span><br><b>Why?</b> BST rule: values smaller than a node always live in its <b>left subtree</b>. Going right would put ${val} in the wrong position.`);
+      llog('rbt',`${val} < ${x.v} → go left`);
+      x=x.l;
+    }else if(val>x.v){
+      explain('rbt',`${val} &gt; ${x.v} → <span class="hl-green">go RIGHT</span><br><b>Why?</b> BST rule: values larger than a node always live in its <b>right subtree</b>. This is what keeps the tree searchable.`);
+      llog('rbt',`${val} > ${x.v} → go right`);
+      x=x.r;
+    }else{
+      explain('rbt',`<span class="hl-yellow">${val} already exists!</span> Red-Black Trees (like sets) do not store duplicates.`);
+      lrbtRunning=false;lrbtSize--;return;
+    }
+    lrbtDrawHL(x.nil?y:x,'cur');await lSleep('rbt');
+  }
+ 
+  z.p=y;
+  if(y.nil){lrbtRoot=z;}
+  else if(val<y.v)y.l=z;else y.r=z;
+ 
+  explain('rbt',`<b>Node ${val} placed!</b> Coloured <span class="hl-red">RED</span> because:<br>A new <b>BLACK</b> node would break Rule 4 (equal black-height). <b>RED</b> only risks a red-red violation which is easier to fix.`);
+  llog('rbt',`${val} inserted as RED node`,'ok');
+  lrbtDrawHL(z,'new');await lSleep('rbt');
+ 
+  // Fix-up
+  let cur=z,fixSteps=0;
+  while(!cur.p.nil&&cur.p.c===LRED){
+    fixSteps++;
+    const p=cur.p,gp=p.p;
+    const uncle=(gp&&!gp.nil)?(p===gp.l?gp.r:gp.l):lrbtNIL;
+    if(!uncle.nil&&uncle.c===LRED){
+      // Case 1
+      explain('rbt',`<b>🔴 CASE 1 — Uncle ${uncle.v} is RED</b><br>Fix: Recolour <b>parent ${p.v} → BLACK</b>, <b>uncle ${uncle.v} → BLACK</b>, <b>grandparent ${gp.v} → RED</b>.<br><b>Why?</b> This keeps the black-height balanced while fixing the red-red violation. Then we check grandparent upward.`);
+      llog('rbt',`Case 1: recolour — parent ${p.v}+uncle ${uncle.v}→BLACK, gp ${gp.v}→RED`,'step');
+      p.c=LBLK;uncle.c=LBLK;gp.c=LRED;
+      lrbtDraw();await lSleep('rbt');
+      cur=gp;
+    }else{
+      if(p===gp.l){
+        if(cur===p.r){
+          // Case 2
+          explain('rbt',`<b>🔄 CASE 2 — Left-Right Zigzag</b><br>Path bends: ${gp.v} → ${p.v} → ${cur.v} (zigzag shape).<br>Fix: <b>Rotate LEFT on parent ${p.v}</b> to straighten into a line.<br><b>Why?</b> Rotations only work cleanly on straight paths. Case 2 converts to Case 3.`);
+          llog('rbt',`Case 2: left-rotate on parent ${p.v}`,'step');
+          cur=p;lrbtRotL(cur);lrbtDraw();await lSleep('rbt');
+        }
+        // Case 3
+        explain('rbt',`<b>↩️ CASE 3 — Left-Left Straight Line</b><br>Path is straight: gp ${gp.v} → parent ${cur.p?cur.p.v:'?'} → ${cur.v}.<br>Fix: <b>Rotate RIGHT on grandparent ${gp.v}</b> + swap colours.<br><b>Why?</b> Rotation lifts the parent up, swap makes the new root BLACK. All 4 rules satisfied!`);
+        llog('rbt',`Case 3: right-rotate on gp ${gp.v}`,'step');
+        cur.p.c=LBLK;gp.c=LRED;lrbtRotR(gp);
+      }else{
+        if(cur===p.l){
+          explain('rbt',`<b>🔄 CASE 2 (mirror) — Right-Left Zigzag</b><br>Fix: <b>Rotate RIGHT on parent ${p.v}</b> to straighten the path.`);
+          llog('rbt',`Case 2 (mirror): right-rotate on parent ${p.v}`,'step');
+          cur=p;lrbtRotR(cur);lrbtDraw();await lSleep('rbt');
+        }
+        explain('rbt',`<b>↪️ CASE 3 (mirror) — Right-Right Straight</b><br>Fix: <b>Rotate LEFT on grandparent ${gp.v}</b> + swap colours. Tree is balanced here!`);
+        llog('rbt',`Case 3 (mirror): left-rotate on gp ${gp.v}`,'step');
+        cur.p.c=LBLK;gp.c=LRED;lrbtRotL(gp);
+      }
+      lrbtDraw();await lSleep('rbt');
+    }
+  }
+  lrbtRoot.c=LBLK;
+ 
+  if(fixSteps===0){
+    explain('rbt',`<b>✅ No fix-up needed!</b><br>Parent of ${val} is BLACK, so Rule 3 (no consecutive reds) was never violated. A RED node under a BLACK parent is always valid.`);
+    llog('rbt','No violations — tree already valid','ok');
+  }else{
+    explain('rbt',`<b>✅ All rules satisfied!</b><br>Root ${lrbtRoot.v} confirmed BLACK (Rule 2). All paths have equal black-height (Rule 4). The tree is perfectly balanced.`);
+    llog('rbt','Fix-up complete — all 4 RBT rules satisfied','ok');
+  }
+  lrbtDraw();
+  const h=lrbtHeight(lrbtRoot);
+  document.getElementById('lrbt-stats').textContent=`Nodes: ${lrbtSize} | Height: ${h}`;
+  lrbtRunning=false;
+}
+ 
+async function lrbtSearch(){
+  const v=parseInt(document.getElementById('lrbt-val').value);
+  if(isNaN(v)){explain('rbt','<b class="hl-red">Enter a number to search!</b>');return;}
+  if(lrbtRunning)return;lrbtRunning=true;
+  llog('rbt',`━━ SEARCH ${v} ━━`,'step');
+  explain('rbt',`<b>Searching for ${v}</b>. At each node: if ${v} equals the node value → found! If smaller → go left. If larger → go right. This is O(log n) — we never search the whole tree!`);
+  await lSleep('rbt');
+  let cur=lrbtRoot,depth=0;
+  while(!cur.nil){
+    lrbtDrawHL(cur,'cur');await lSleep('rbt');
+    if(v===cur.v){
+      explain('rbt',`<span class="hl-green">🎯 FOUND ${v}!</span> Found at depth ${depth}.<br>Search took only ${depth+1} comparisons. In a balanced tree with ${lrbtSize} nodes, worst case is just <b>${lrbtHeight(lrbtRoot)} comparisons</b> — that is O(log n)!`);
+      llog('rbt',`${v} FOUND at depth ${depth}!`,'ok');
+      lrbtDrawHL(cur,'new');lrbtRunning=false;return;
+    }
+    if(v<cur.v){
+      explain('rbt',`${v} &lt; ${cur.v} → <span class="hl-green">search LEFT subtree</span><br>We instantly eliminate the entire right subtree — that is why BST search is O(log n)!`);
+      llog('rbt',`${v} < ${cur.v} → go left`);cur=cur.l;
+    }else{
+      explain('rbt',`${v} &gt; ${cur.v} → <span class="hl-green">search RIGHT subtree</span><br>The entire left subtree is eliminated in one comparison!`);
+      llog('rbt',`${v} > ${cur.v} → go right`);cur=cur.r;
+    }
+    depth++;
+  }
+  explain('rbt',`<span class="hl-red">❌ ${v} NOT FOUND</span><br>Reached a NIL node — ${v} is not in the tree. Search still took only ${depth} comparisons even though it failed.`);
+  llog('rbt',`${v} not found`,'err');
+  lrbtDraw();lrbtRunning=false;
+}
+ 
+async function lrbtDelete(){
+  const v=parseInt(document.getElementById('lrbt-val').value);
+  if(isNaN(v)){explain('rbt','<b class="hl-red">Enter a number to delete!</b>');return;}
+  if(lrbtRunning)return;
+  // Find the node first
+  let cur=lrbtRoot;
+  while(!cur.nil&&cur.v!==v)cur=v<cur.v?cur.l:cur.r;
+  if(cur.nil){explain('rbt',`<span class="hl-red">${v} is not in the tree!</span>`);llog('rbt',`${v} not found — cannot delete`,'err');return;}
+  lrbtRunning=true;
+  llog('rbt',`━━ DELETE ${v} ━━`,'step');
+  explain('rbt',`<b>Deleting ${v}</b>. RBT deletion is the most complex operation — we may need to fix black-height violations after removing the node.<br>Finding ${v} in the tree first...`);
+  lrbtDrawHL(cur,'cur');await lSleep('rbt');
+  // Perform actual deletion using transplant method
+  lrbtDeleteNode(cur);
+  lrbtSize=Math.max(0,lrbtSize-1);
+  lrbtDraw();
+  const h=lrbtHeight(lrbtRoot);
+  document.getElementById('lrbt-stats').textContent=`Nodes: ${lrbtSize} | Height: ${h}`;
+  explain('rbt',`<span class="hl-green">✅ ${v} deleted!</span> The tree has been rebalanced. All 4 Red-Black rules are preserved. The tree now has ${lrbtSize} nodes.`);
+  llog('rbt',`${v} deleted. Tree rebalanced.`,'ok');
+  lrbtRunning=false;
+}
+ 
+function lrbtDeleteNode(z){
+  let y=z,yCurColor=y.c,x;
+  if(z.l.nil){x=z.r;lrbtTransplant(z,z.r);}
+  else if(z.r.nil){x=z.l;lrbtTransplant(z,z.l);}
+  else{
+    // find minimum of right subtree
+    y=z.r;while(!y.l.nil)y=y.l;
+    yCurColor=y.c;x=y.r;
+    if(y.p===z)x.p=y;
+    else{lrbtTransplant(y,y.r);y.r=z.r;y.r.p=y;}
+    lrbtTransplant(z,y);y.l=z.l;y.l.p=y;y.c=z.c;
+  }
+  if(yCurColor===LBLK)lrbtDeleteFix(x);
+}
+function lrbtTransplant(u,v){
+  if(!u.p||u.p.nil)lrbtRoot=v;
+  else if(u===u.p.l)u.p.l=v;else u.p.r=v;
+  if(v&&!v.nil)v.p=u.p;
+}
+function lrbtDeleteFix(x){
+  if(!x||x.nil)return;
+  while(x!==lrbtRoot&&x.c===LBLK&&!x.nil){
+    if(x===x.p.l){
+      let w=x.p.r;
+      if(w.c===LRED){w.c=LBLK;x.p.c=LRED;lrbtRotL(x.p);w=x.p.r;}
+      if(w.l.c===LBLK&&w.r.c===LBLK){w.c=LRED;x=x.p;}
+      else{if(w.r.c===LBLK){w.l.c=LBLK;w.c=LRED;lrbtRotR(w);w=x.p.r;}w.c=x.p.c;x.p.c=LBLK;w.r.c=LBLK;lrbtRotL(x.p);x=lrbtRoot;}
+    }else{
+      let w=x.p.l;
+      if(w.c===LRED){w.c=LBLK;x.p.c=LRED;lrbtRotR(x.p);w=x.p.l;}
+      if(w.r.c===LBLK&&w.l.c===LBLK){w.c=LRED;x=x.p;}
+      else{if(w.l.c===LBLK){w.r.c=LBLK;w.c=LRED;lrbtRotL(w);w=x.p.l;}w.c=x.p.c;x.p.c=LBLK;w.l.c=LBLK;lrbtRotR(x.p);x=lrbtRoot;}
+    }
+  }
+  x.c=LBLK;
+}
+ 
+async function lrbtTraverse(type){
+  if(lrbtRoot.nil){explain('rbt','<b class="hl-red">Tree is empty!</b>');return;}
+  if(lrbtRunning)return;lrbtRunning=true;
+  const result=[];
+  function inorder(n){if(!n||n.nil)return;inorder(n.l);result.push(n);inorder(n.r);}
+  function preorder(n){if(!n||n.nil)return;result.push(n);preorder(n.l);preorder(n.r);}
+  type==='inorder'?inorder(lrbtRoot):preorder(lrbtRoot);
+  const name=type==='inorder'?'In-Order (Left→Root→Right)':'Pre-Order (Root→Left→Right)';
+  llog('rbt',`━━ ${name.toUpperCase()} ━━`,'step');
+  explain('rbt',`<b>${name} Traversal</b><br>${type==='inorder'?'In-order visits Left subtree → Root → Right subtree. <span class="hl-green">Result is always sorted!</span>':'Pre-order visits Root → Left → Right. Used for copying the tree structure.'}`);
+  for(const node of result){
+    lrbtDrawHL(node,'cur');
+    explain('rbt',`Visiting <b>${node.v}</b> (${node.c===LRED?'<span class="hl-red">RED</span>':'BLACK'})${type==='inorder'?' — in-order always visits in sorted order!':''}`);
+    llog('rbt',`Visit: ${node.v}`);
+    await lSleep('rbt');
+  }
+  lrbtDraw();
+  explain('rbt',`<span class="hl-green">✅ ${name} complete!</span><br>Order: <b>${result.map(n=>n.v).join(' → ')}</b>${type==='inorder'?'<br>Notice: the values are in ascending sorted order — that is the BST property!':''}`);
+  llog('rbt',`Result: ${result.map(n=>n.v).join(', ')}`,'ok');
+  lrbtRunning=false;
+}
+ 
+function lrbtRotL(x){const y=x.r;x.r=y.l;if(y.l&&!y.l.nil)y.l.p=x;y.p=x.p;if(!x.p||x.p.nil)lrbtRoot=y;else if(x===x.p.l)x.p.l=y;else x.p.r=y;y.l=x;x.p=y;}
+function lrbtRotR(x){const y=x.l;x.l=y.r;if(y.r&&!y.r.nil)y.r.p=x;y.p=x.p;if(!x.p||x.p.nil)lrbtRoot=y;else if(x===x.p.r)x.p.r=y;else x.p.l=y;y.r=x;x.p=y;}
+function lrbtHeight(n){if(!n||n.nil)return 0;return 1+Math.max(lrbtHeight(n.l),lrbtHeight(n.r));}
+ 
+function lrbtAssignPos(n,x,y,sp,lh){
+  if(!n||n.nil)return;n.x=x;n.y=y;
+  lrbtAssignPos(n.l,x-sp,y+lh,sp*.55,lh);
+  lrbtAssignPos(n.r,x+sp,y+lh,sp*.55,lh);
+}
+ 
+function lrbtDrawHL(hlNode=null,hlType=null){
+  const svg=document.getElementById('lrbt-svg');if(!svg)return;
+  const W=svg.clientWidth||680,H=svg.clientHeight||480;
+  document.getElementById('lrbt-edges').innerHTML='';
+  document.getElementById('lrbt-nodes').innerHTML='';
+  if(lrbtRoot.nil)return;
+  const dp=lrbtHeight(lrbtRoot);
+  const lh=Math.min(75,(H-60)/Math.max(dp,1));
+  lrbtAssignPos(lrbtRoot,W/2,48,W/2.6,lh);
+ 
+  function drawE(a,b){
+    const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',a.x);l.setAttribute('y1',a.y);l.setAttribute('x2',b.x);l.setAttribute('y2',b.y);
+    l.setAttribute('stroke','rgba(155,89,182,.3)');l.setAttribute('stroke-width','1.8');l.setAttribute('fill','none');
+    document.getElementById('lrbt-edges').appendChild(l);
+  }
+  function drawN(n){
+    if(!n||n.nil)return;
+    if(n.l){drawE(n,n.l);drawN(n.l);}
+    if(n.r){drawE(n,n.r);drawN(n.r);}
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('transform',`translate(${n.x},${n.y})`);
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('r','22');
+    const isHL=hlNode&&n===hlNode;
+    let fillColor=n.c===LRED?'#c0392b':'#1a0533';
+    let strokeColor=n.c===LRED?'#ff6b6b':'rgba(155,89,182,.6)';
+    let filter='';
+    if(isHL){
+      if(hlType==='new'){strokeColor='#2ecc71';fillColor=n.c===LRED?'#c0392b':'#1a0533';filter='url(#lrbt-g)';}
+      else if(hlType==='cur'){strokeColor='#f1c40f';filter='url(#lrbt-y)';}
+      c.setAttribute('stroke-width','4');
+    }else c.setAttribute('stroke-width','2.5');
+    c.setAttribute('fill',fillColor);c.setAttribute('stroke',strokeColor);
+    if(filter)c.style.filter=filter;
+    c.style.transition='fill .3s,stroke .3s';
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('fill','#fff');t.setAttribute('font-family',"'Press Start 2P',monospace");
+    t.setAttribute('font-size','11');t.setAttribute('dominant-baseline','middle');t.setAttribute('text-anchor','middle');
+    t.setAttribute('pointer-events','none');t.textContent=n.v;
+    // NIL indicators (small dots)
+    [n.l,n.r].forEach((child,i)=>{
+      if(child&&child.nil){
+        const nil=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        nil.setAttribute('r','7');
+        const dx=i===0?-28:28,dy=30;
+        nil.setAttribute('cx',dx);nil.setAttribute('cy',dy);
+        nil.setAttribute('fill','#0d0020');nil.setAttribute('stroke','rgba(155,89,182,.2)');
+        nil.setAttribute('stroke-width','1');nil.setAttribute('stroke-dasharray','3,2');
+        g.appendChild(nil);
+        const nt=document.createElementNS('http://www.w3.org/2000/svg','text');
+        nt.setAttribute('x',dx);nt.setAttribute('y',dy);
+        nt.setAttribute('fill','rgba(155,89,182,.35)');nt.setAttribute('font-size','6');
+        nt.setAttribute('dominant-baseline','middle');nt.setAttribute('text-anchor','middle');nt.textContent='N';
+        g.appendChild(nt);
+      }
+    });
+    g.appendChild(c);g.appendChild(t);
+    document.getElementById('lrbt-nodes').appendChild(g);
+  }
+  drawN(lrbtRoot);
+}
+function lrbtDraw(){lrbtDrawHL(null,null);}
+ 
+/* ════════════════════════════════════════════════════════
+   LEARN — TRIE
+   Full working Trie with dynamic explanations
+════════════════════════════════════════════════════════ */
+class LTrieNode{constructor(ch=''){this.ch=ch;this.children={};this.isEnd=false;this.id=Math.random();this.x=0;this.y=0;}}
+let ltrieRoot=null,ltrieWords=[],ltrieRunning=false,ltrieNodeCount=0;
+ 
+function ltrieInit(){
+  // enter key for trie input
+  const inp=document.getElementById('ltrie-val');
+  if(inp&&!inp._ucBound){inp._ucBound=true;
+    inp.addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,'');});
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')ltrieInsert();});
+  }
+  if(ltrieRoot!==null){ltrieDraw();return;}
+  ltrieRoot=new LTrieNode('');ltrieWords=[];ltrieNodeCount=1;
+  explain('trie','Welcome to Trie Learn Mode! Type any word and click INSERT. I will walk through every node, explaining what is shared and what is new.');
+}
+ 
+function ltrieReset(){
+  if(ltrieRunning)return;
+  ltrieRoot=new LTrieNode('');ltrieWords=[];ltrieNodeCount=1;llogCounts.trie=0;
+  document.getElementById('ltrie-log').innerHTML='';
+  document.getElementById('ltrie-word-chips').innerHTML='<span style="font-family:var(--font);font-size:6.5px;color:var(--dim)">none yet</span>';
+  document.getElementById('ltrie-stats').textContent='Words: 0 | Nodes: 0';
+  document.getElementById('ltrie-nodes').innerHTML='';document.getElementById('ltrie-edges').innerHTML='';
+  explain('trie','Trie cleared! Insert words to start building.');
+}
+ 
+function ltrieUpdateWordChips(){
+  const el=document.getElementById('ltrie-word-chips');
+  if(!ltrieWords.length){el.innerHTML='<span style="font-family:var(--font);font-size:6.5px;color:var(--dim)">none yet</span>';return;}
+  el.innerHTML=ltrieWords.map(w=>`<div class="twl-chip del-mode" title="Click to delete" onclick="ltrieDeleteWord('${w}')">${w}</div>`).join('');
+}
+ 
+async function ltrieInsert(){
+  const w=document.getElementById('ltrie-val').value.trim().toUpperCase();
+  if(!w){explain('trie','<b class="hl-red">Type a word first!</b>');return;}
+  if(w.length>12){explain('trie','<b class="hl-red">Keep words under 12 characters!</b>');return;}
+  document.getElementById('ltrie-val').value='';
+  if(ltrieWords.includes(w)){explain('trie',`<span class="hl-yellow">"${w}" is already in the Trie!</span>`);return;}
+  if(ltrieRunning)return;ltrieRunning=true;
+  llog('trie',`━━ INSERT "${w}" ━━`,'step');
+  explain('trie',`<b>Inserting "${w}"</b> into the Trie.<br>I will walk from the ROOT, one character at a time. <span class="hl-green">Existing nodes are reused</span> — only missing ones are created.`);
+  await lSleep('trie');
+ 
+  let node=ltrieRoot;let shared=0,created=0;
+  for(let i=0;i<w.length;i++){
+    const ch=w[i];
+    const existed=!!node.children[ch];
+    if(existed){
+      shared++;
+      explain('trie',`Character <b class="hl-blue">"${ch}"</b> (position ${i+1} of "${w}"): <span class="hl-green">NODE EXISTS!</span><br>This character is shared with another word. <b>No new node needed.</b> This is why Tries are memory-efficient — "CAT" and "CAR" share the same C and A nodes.`);
+      llog('trie',`"${ch}" (pos ${i+1}) — shared node, reusing it`);
+    }else{
+      created++;ltrieNodeCount++;
+      explain('trie',`Character <b class="hl-blue">"${ch}"</b> (position ${i+1} of "${w}"): <span class="hl-yellow">NEW NODE CREATED!</span><br>No existing path for "${ch}" here. A new node is added to the tree. This happens where "${w}" diverges from all previously stored words.`);
+      llog('trie',`"${ch}" (pos ${i+1}) — NEW node created`,'ok');
+      node.children[ch]=new LTrieNode(ch);
+    }
+    node=node.children[ch];
+    ltrieDraw(node.id,'insert');await lSleep('trie');
+  }
+  node.isEnd=true;
+  ltrieWords.push(w);
+  ltrieUpdateWordChips();
+  document.getElementById('ltrie-stats').textContent=`Words: ${ltrieWords.length} | Nodes: ${ltrieNodeCount}`;
+  explain('trie',`<span class="hl-green">✅ "${w}" inserted!</span><br>Shared <b>${shared}</b> existing node${shared!==1?'s':''}, created <b>${created}</b> new node${created!==1?'s':''}.<br>The yellow dot on the last node marks it as an <b>end-of-word</b> — distinguishing "${w}" from any longer words starting with "${w}".`);
+  llog('trie',`"${w}" done — ${shared} shared, ${created} created`,'ok');
+  ltrieDraw();ltrieRunning=false;
+}
+ 
+async function ltrieSearch(){
+  const w=document.getElementById('ltrie-val').value.trim().toUpperCase();
+  if(!w){explain('trie','<b class="hl-red">Type a word to search!</b>');return;}
+  if(ltrieRunning)return;ltrieRunning=true;
+  llog('trie',`━━ SEARCH "${w}" ━━`,'step');
+  explain('trie',`<b>Searching for "${w}"</b>.<br>Walk the Trie one character at a time. If any character is missing → NOT FOUND. If all characters exist AND the last node has the end-of-word flag → FOUND!`);
+  await lSleep('trie');
+  let node=ltrieRoot;
+  for(let i=0;i<w.length;i++){
+    const ch=w[i];
+    if(!node.children[ch]){
+      explain('trie',`Character <b>"${ch}"</b> at position ${i+1} does not exist in this path!<br><span class="hl-red">❌ "${w}" NOT FOUND</span><br>Search ends here. The path for "${w}" breaks at "${ch}". This takes only ${i+1} comparison${i>0?'s':''} — O(L) time.`);
+      llog('trie',`"${ch}" not found — search fails`,'err');
+      ltrieDraw();ltrieRunning=false;return;
+    }
+    node=node.children[ch];
+    explain('trie',`<span class="hl-green">"${ch}" found!</span> (position ${i+1}/${w.length}). Following the path...${i<w.length-1?` Next character: "${w[i+1]}"`:' Last character reached!'}`);
+    llog('trie',`"${ch}" found → follow path`);
+    ltrieDraw(node.id,'search');await lSleep('trie');
+  }
+  if(node.isEnd){
+    explain('trie',`<span class="hl-green">🎯 "${w}" FOUND!</span><br>All ${w.length} characters followed, and the final node has the <b>end-of-word flag</b>. This is a complete stored word.<br>Search took exactly <b>${w.length} steps</b> — O(length) regardless of how many words are in the Trie!`);
+    llog('trie',`"${w}" FOUND — end-of-word confirmed!`,'ok');
+    ltrieDraw(node.id,'found');
+  }else{
+    explain('trie',`<span class="hl-yellow">⚠️ "${w}" is a PREFIX only</span><br>All ${w.length} characters exist in the path, but the final node does NOT have the end-of-word flag. "${w}" was never explicitly inserted — it only exists as a prefix of longer words.`);
+    llog('trie',`"${w}" is only a prefix, not a stored word`,'info');
+  }
+  ltrieRunning=false;
+}
+ 
+async function ltriePrefix(){
+  const w=document.getElementById('ltrie-val').value.trim().toUpperCase();
+  if(!w){explain('trie','<b class="hl-red">Type a prefix to check!</b>');return;}
+  if(ltrieRunning)return;ltrieRunning=true;
+  llog('trie',`━━ PREFIX "${w}" ━━`,'step');
+  explain('trie',`<b>Prefix search for "${w}"</b>.<br>This is how <b>autocomplete</b> works! Walk to the prefix node, then collect all words below it.`);
+  await lSleep('trie');
+  let node=ltrieRoot;
+  for(const ch of w){
+    if(!node.children[ch]){
+      explain('trie',`<span class="hl-red">❌ No words start with "${w}"</span><br>The path breaks at "${ch}". There are no words with this prefix in the Trie.`);
+      llog('trie',`No words with prefix "${w}"`,'err');ltrieDraw();ltrieRunning=false;return;
+    }
+    node=node.children[ch];
+    ltrieDraw(node.id,'search');await lSleep('trie');
+  }
+  const matches=[];
+  function collect(n,prefix){if(n.isEnd)matches.push(prefix);for(const ch in n.children)collect(n.children[ch],prefix+ch);}
+  collect(node,w);
+  explain('trie',`<span class="hl-green">✅ Found ${matches.length} word${matches.length!==1?'s':''} starting with "${w}"!</span><br><b>${matches.join(', ')}</b><br>A Trie lists all completions in O(prefix length + results) — exactly how Google suggests work!`);
+  llog('trie',`Prefix "${w}" → matches: ${matches.join(', ')}`,'ok');
+  ltrieDraw(node.id,'found');ltrieRunning=false;
+}
+ 
+async function ltrieDelete(){
+  const w=document.getElementById('ltrie-val').value.trim().toUpperCase();
+  if(!w){explain('trie','<b class="hl-red">Type a word to delete!</b>');return;}
+  await ltrieDeleteWord(w);
+}
+ 
+async function ltrieDeleteWord(w){
+  if(ltrieRunning)return;
+  if(!ltrieWords.includes(w)){explain('trie',`<span class="hl-red">"${w}" is not in the Trie!</span>`);return;}
+  ltrieRunning=true;
+  llog('trie',`━━ DELETE "${w}" ━━`,'step');
+  explain('trie',`<b>Deleting "${w}"</b>.<br>Trie deletion is careful: we can only remove nodes that are NOT shared with other words. A node is safe to delete only if it has no children AND no other word ends here.`);
+  await lSleep('trie');
+  function del(n,word,depth){
+    if(depth===word.length){if(!n.isEnd)return false;n.isEnd=false;return Object.keys(n.children).length===0;}
+    const ch=word[depth];if(!n.children[ch])return false;
+    const shouldDel=del(n.children[ch],word,depth+1);
+    if(shouldDel){delete n.children[ch];ltrieNodeCount=Math.max(1,ltrieNodeCount-1);return !n.isEnd&&Object.keys(n.children).length===0;}
+    return false;
+  }
+  del(ltrieRoot,w,0);
+  ltrieWords=ltrieWords.filter(x=>x!==w);
+  ltrieUpdateWordChips();
+  document.getElementById('ltrie-stats').textContent=`Words: ${ltrieWords.length} | Nodes: ${ltrieNodeCount}`;
+  explain('trie',`<span class="hl-green">✅ "${w}" deleted!</span><br>Nodes unique to "${w}" have been removed. Nodes shared with other words are kept intact — that is the careful part of Trie deletion.`);
+  llog('trie',`"${w}" deleted — shared nodes preserved`,'ok');
+  ltrieDraw();ltrieRunning=false;
+}
+ 
+async function ltrieDemo(){
+  if(ltrieRunning)return;ltrieReset();
+  const words=['CAT','CAR','CARD','CARE','BAT','BALL'];
+  explain('trie','Demo! Inserting CAT, CAR, CARD, CARE, BAT, BALL. Watch how "CAT", "CAR", "CARD" and "CARE" all share the same C→A path!');
+  for(const w of words){
+    document.getElementById('ltrie-val').value=w;
+    await ltrieInsert();await sleep(400);
+  }
+  explain('trie','Demo complete! Notice: all C-words share the C and A nodes. CARD and CARE both share C→A→R. Only the last character differs. That is why Tries save memory!');
+}
+ 
+function ltrieDraw(hlId=null,hlType=null){
+  const svg=document.getElementById('ltrie-svg');if(!svg)return;
+  const W=svg.clientWidth||680,H=svg.clientHeight||460;
+  document.getElementById('ltrie-edges').innerHTML='';
+  document.getElementById('ltrie-nodes').innerHTML='';
+  if(!ltrieRoot)return;
+  function depth(n){if(!Object.keys(n.children).length)return 0;return 1+Math.max(...Object.values(n.children).map(depth));}
+  const d=depth(ltrieRoot);
+  const lh=Math.min(80,(H-60)/Math.max(d+1,1));
+  function assignPos(n,x,y,spread){
+    n.x=x;n.y=y;
+    const kids=Object.values(n.children);if(!kids.length)return;
+    const half=(kids.length-1)/2;
+    kids.forEach((c,i)=>assignPos(c,x+(i-half)*Math.max(50,spread/Math.max(kids.length,1)),y+lh,spread*.72));
+  }
+  assignPos(ltrieRoot,W/2,38,W*.88);
+  function drawNode(n){
+    for(const ch in n.children){
+      const child=n.children[ch];
+      const isHl=child.id===hlId;
+      const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+      l.setAttribute('x1',n.x);l.setAttribute('y1',n.y);l.setAttribute('x2',child.x);l.setAttribute('y2',child.y);
+      l.setAttribute('stroke',isHl?'var(--green2)':'rgba(52,152,219,.28)');
+      l.setAttribute('stroke-width',isHl?'3':'1.8');l.setAttribute('fill','none');
+      if(isHl)l.style.filter='drop-shadow(0 0 4px rgba(39,174,96,.5))';
+      document.getElementById('ltrie-edges').appendChild(l);
+      const mx=(n.x+child.x)/2,my=(n.y+child.y)/2;
+      const ct=document.createElementNS('http://www.w3.org/2000/svg','text');
+      ct.setAttribute('x',mx+8);ct.setAttribute('y',my);
+      ct.setAttribute('fill',isHl?'var(--green2)':'rgba(52,152,219,.7)');
+      ct.setAttribute('font-family',"'Press Start 2P',monospace");ct.setAttribute('font-size','10');
+      ct.setAttribute('dominant-baseline','middle');ct.setAttribute('text-anchor','middle');ct.setAttribute('pointer-events','none');
+      ct.textContent=ch;document.getElementById('ltrie-edges').appendChild(ct);
+      drawNode(child);
+    }
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('transform',`translate(${n.x},${n.y})`);
+    const isHl=n.id===hlId,isRoot=n===ltrieRoot;
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('r',isRoot?'14':'18');
+    c.setAttribute('fill',n.isEnd?'rgba(241,196,15,.15)':'rgba(26,26,68,.95)');
+    const strokeC=isHl?(hlType==='found'?'var(--blue2)':hlType==='search'?'var(--coin)':'var(--green2)'):(n.isEnd?'var(--coin)':'rgba(52,152,219,.45)');
+    c.setAttribute('stroke',strokeC);c.setAttribute('stroke-width',isHl?'3.5':'2');
+    if(isHl)c.style.filter=hlType==='found'?'drop-shadow(0 0 8px rgba(52,152,219,.7))':'drop-shadow(0 0 8px rgba(39,174,96,.7))';
+    if(n.isEnd){const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('r','4');dot.setAttribute('cy','-12');dot.setAttribute('fill','var(--coin)');dot.setAttribute('stroke','var(--coin2)');dot.setAttribute('stroke-width','1.5');g.appendChild(dot);}
+    const lbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lbl.setAttribute('fill',isRoot?'rgba(255,255,255,.4)':'white');
+    lbl.setAttribute('font-family',"'Press Start 2P',monospace");lbl.setAttribute('font-size',isRoot?'8':'12');
+    lbl.setAttribute('dominant-baseline','middle');lbl.setAttribute('text-anchor','middle');lbl.setAttribute('pointer-events','none');
+    lbl.textContent=isRoot?'R':n.ch;
+    g.appendChild(c);g.appendChild(lbl);document.getElementById('ltrie-nodes').appendChild(g);
+  }
+  drawNode(ltrieRoot);
+}
+ 
+/* ════════════════════════════════════════════════════════
+   LEARN — GRAPH
+   Full BFS/DFS/Dijkstra visualizer with dynamic explanations
+════════════════════════════════════════════════════════ */
+let lgraphNodes=[],lgraphEdges=[],lgraphAlgo='bfs',lgraphSteps=[],lgraphIdx=0,lgraphRunning=false,lgraphTimer=null;
+let lgraphDrag=null,lgraphDragOx=0,lgraphDragOy=0,lgraphEdgeFrom=null;
+ 
+const LGNODE_COL={
+  unvisited:{fill:'#0d3b18',stroke:'rgba(39,174,96,.45)'},
+  start:{fill:'#0b5394',stroke:'#3498db'},
+  inqueue:{fill:'#6c3483',stroke:'#9b59b6'},
+  visiting:{fill:'#7d6608',stroke:'#f1c40f'},
+  visited:{fill:'#145a32',stroke:'#2ecc71'},
+  settled:{fill:'#145a32',stroke:'#2ecc71'},
+};
+ 
+function lgraphInit(){
+  const svg=document.getElementById('lgraph-svg');if(!svg)return;
+  // Re-attach event listeners every time (safe — removeEventListener dedupes)
+  svg.removeEventListener('click',lgraphSvgClick);
+  svg.removeEventListener('mousemove',lgraphSvgMove);
+  svg.addEventListener('click',lgraphSvgClick);
+  svg.addEventListener('mousemove',lgraphSvgMove);
+  svg.addEventListener('mouseup',()=>lgraphDrag=null);
+  svg.addEventListener('mouseleave',()=>lgraphDrag=null);
+  if(lgraphNodes.length>0){lgraphDrawEdges();return;}
+  document.getElementById('lgraph-hint').textContent='Click NEW GRAPH for a random graph, or click canvas to add nodes';
+  lgraphRandom();
+}
+ 
+function lgraphSetAlgo(algo){
+  lgraphAlgo=algo;
+  ['bfs','dfs','dijkstra'].forEach(a=>{
+    document.getElementById('lgraph-'+a+'-btn').classList.toggle('on',a===algo);
+  });
+  const badge=document.getElementById('lgraph-algo-badge');
+  if(badge){badge.textContent=algo.toUpperCase();badge.style.color=algo==='bfs'?'var(--blue2)':algo==='dfs'?'var(--purple2)':'var(--coin)';}
+  lgraphReset();
+  const descs={bfs:'BFS explores level by level using a Queue. Click RUN to see it find the shortest path from node 0.',dfs:'DFS dives as deep as possible using a Stack. Click RUN to see it explore every path before backtracking.',dijkstra:'Dijkstra finds the cheapest path in a weighted graph. Numbers on edges are costs. Click RUN to see it work.'};
+  explain('graph',descs[algo]);
+}
+ 
+function lgraphSvgClick(e){
+  if(lgraphRunning)return;
+  const r=document.getElementById('lgraph-svg').getBoundingClientRect();
+  const x=e.clientX-r.left,y=e.clientY-r.top;
+  const hit=lgraphHit(x,y);
+  if(hit!==null){
+    if(lgraphEdgeFrom===null){
+      lgraphEdgeFrom=hit;
+      explain('graph',`Node ${hit} selected. Click another node to create an edge between them!`);
+    }else if(lgraphEdgeFrom!==hit){
+      if(!lgraphEdges.find(ed=>(ed.a===lgraphEdgeFrom&&ed.b===hit)||(ed.a===hit&&ed.b===lgraphEdgeFrom))){
+        const w=Math.floor(Math.random()*8)+1;
+        lgraphEdges.push({a:lgraphEdgeFrom,b:hit,state:'normal',weight:w});
+        lgraphDrawEdges();toast(`Edge ${lgraphEdgeFrom}↔${hit} added!`);
+        explain('graph',`Edge added between node ${lgraphEdgeFrom} and node ${hit}! Weight: ${w}. Now click RUN to traverse.`);
+      }
+      lgraphEdgeFrom=null;
+    }else lgraphEdgeFrom=null;
+    return;
+  }
+  if(lgraphNodes.length>=18){toast('Max 18 nodes!');return;}
+  const id=lgraphNodes.length;
+  lgraphNodes.push({x,y,state:'unvisited',id,el:null});
+  lgraphDrawNode(id);
+  explain('graph',`Node ${id} added! Click two nodes to connect them with an edge.`);
+}
+ 
+function lgraphHit(x,y){for(let i=lgraphNodes.length-1;i>=0;i--){if(Math.hypot(lgraphNodes[i].x-x,lgraphNodes[i].y-y)<24)return i;}return null;}
+function lgraphSvgMove(e){
+  if(!lgraphDrag)return;
+  const r=document.getElementById('lgraph-svg').getBoundingClientRect();
+  lgraphNodes[lgraphDrag.id].x=e.clientX-r.left-lgraphDragOx;
+  lgraphNodes[lgraphDrag.id].y=e.clientY-r.top-lgraphDragOy;
+  lgraphDrag.el.setAttribute('transform',`translate(${lgraphNodes[lgraphDrag.id].x},${lgraphNodes[lgraphDrag.id].y})`);
+  lgraphDrawEdges();
+}
+ 
+function lgraphDrawNode(id){
+  const n=lgraphNodes[id];
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('transform',`translate(${n.x},${n.y})`);
+  const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  c.setAttribute('r','24');c.setAttribute('fill',LGNODE_COL.unvisited.fill);c.setAttribute('stroke',LGNODE_COL.unvisited.stroke);c.setAttribute('stroke-width','2.5');c.style.cursor='grab';c.style.transition='fill .3s,stroke .3s';
+  const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('fill','white');t.setAttribute('font-family',"'Press Start 2P',monospace");t.setAttribute('font-size','12');t.setAttribute('dominant-baseline','middle');t.setAttribute('text-anchor','middle');t.setAttribute('pointer-events','none');t.textContent=id;
+  g.appendChild(c);g.appendChild(t);
+  g.style.cursor='grab';
+  g.addEventListener('mousedown',ev=>{if(lgraphRunning)return;ev.stopPropagation();const r=document.getElementById('lgraph-svg').getBoundingClientRect();lgraphDragOx=ev.clientX-r.left-n.x;lgraphDragOy=ev.clientY-r.top-n.y;lgraphDrag={id,el:g};});
+  lgraphNodes[id].el=g;
+  document.getElementById('lgraph-nodes').appendChild(g);
+}
+ 
+function lgraphColorNode(id,state){
+  const n=lgraphNodes[id];if(!n||!n.el)return;
+  n.state=state;const c=n.el.querySelector('circle');
+  const col=LGNODE_COL[state]||LGNODE_COL.unvisited;
+  c.setAttribute('fill',col.fill);c.setAttribute('stroke',col.stroke);
+  const filterMap={visiting:'url(#lg-y)',visited:'url(#lg-g)',settled:'url(#lg-g)',start:'url(#lg-b)'};
+  c.style.filter=filterMap[state]||'';
+}
+ 
+function lgraphDrawEdges(){
+  const g=document.getElementById('lgraph-edges');g.innerHTML='';
+  const isDijk=lgraphAlgo==='dijkstra';
+  lgraphEdges.forEach(e=>{
+    const a=lgraphNodes[e.a],b=lgraphNodes[e.b];
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',a.x);line.setAttribute('y1',a.y);line.setAttribute('x2',b.x);line.setAttribute('y2',b.y);
+    const trav=e.state==='traversed';
+    line.setAttribute('stroke',trav?'var(--green2)':'rgba(39,174,96,.2)');line.setAttribute('stroke-width',trav?'3':'2');line.setAttribute('fill','none');
+    if(trav)line.style.filter='drop-shadow(0 0 4px rgba(39,174,96,.5))';
+    g.appendChild(line);
+    if(isDijk&&e.weight){
+      const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+      const wt=document.createElementNS('http://www.w3.org/2000/svg','text');
+      wt.setAttribute('x',mx);wt.setAttribute('y',my-8);wt.setAttribute('fill','rgba(241,196,15,.9)');
+      wt.setAttribute('font-family',"'Press Start 2P',monospace");wt.setAttribute('font-size','9');wt.setAttribute('text-anchor','middle');wt.setAttribute('pointer-events','none');
+      wt.textContent=e.weight;g.appendChild(wt);
+    }
+  });
+}
+ 
+function lgraphUpdateDS(arr,isStack=false){
+  const el=document.getElementById('lgraph-ds-items');
+  if(!arr||!arr.length){el.innerHTML='<span style="font-family:var(--font);font-size:6.5px;color:var(--dim)">empty</span>';return;}
+  el.innerHTML=arr.slice(0,10).map(n=>`<div class="ds-cell${isStack?' stk':''}">${n}</div>`).join('');
+}
+ 
+function lgraphRandom(){
+  if(lgraphRunning){lgraphRunning=false;clearTimeout(lgraphTimer);}
+  lgraphNodes=[];lgraphEdges=[];lgraphSteps=[];lgraphIdx=0;lgraphEdgeFrom=null;
+  document.getElementById('lgraph-nodes').innerHTML='';
+  document.getElementById('lgraph-edges').innerHTML='';
+  const svg=document.getElementById('lgraph-svg');
+  const W=svg.clientWidth||680,H=svg.clientHeight||460;
+  const n=Math.floor(Math.random()*4)+6;const pad=70;
+  for(let i=0;i<n;i++){
+    const ang=(2*Math.PI*i/n)-Math.PI/2;
+    const rx=(W/2-pad)*(.85+Math.random()*.22),ry=(H/2-pad)*(.85+Math.random()*.22);
+    lgraphNodes.push({x:W/2+rx*Math.cos(ang),y:H/2+ry*Math.sin(ang),state:'unvisited',id:i,el:null});
+    lgraphDrawNode(i);
+  }
+  for(let i=0;i<n-1;i++)lgraphEdges.push({a:i,b:i+1,state:'normal',weight:Math.floor(Math.random()*8)+1});
+  lgraphEdges.push({a:n-1,b:0,state:'normal',weight:Math.floor(Math.random()*8)+1});
+  for(let k=0;k<Math.floor(n*.6);k++){
+    const a=Math.floor(Math.random()*n),b=Math.floor(Math.random()*n);
+    if(a!==b&&!lgraphEdges.find(e=>(e.a===a&&e.b===b)||(e.a===b&&e.b===a)))
+      lgraphEdges.push({a,b,state:'normal',weight:Math.floor(Math.random()*8)+1});
+  }
+  lgraphDrawEdges();
+  const algo=lgraphAlgo;
+  const descs={bfs:`Graph with ${n} nodes ready! I will use a <b>Queue</b> to explore level by level. Click RUN!`,dfs:`Graph with ${n} nodes ready! I will use a <b>Stack</b> to dive deep before backtracking. Click RUN!`,dijkstra:`Weighted graph with ${n} nodes ready! Edge costs shown. I will find the <b>cheapest path</b> from node 0. Click RUN!`};
+  explain('graph',descs[algo]);
+  document.getElementById('lgraph-log').innerHTML='';llogCounts.graph=0;lgraphUpdateDS([]);
+}
+ 
+function lgraphReset(){
+  if(lgraphRunning){lgraphRunning=false;clearTimeout(lgraphTimer);}
+  lgraphSteps=[];lgraphIdx=0;lgraphEdgeFrom=null;
+  lgraphNodes.forEach(n=>{if(n.el)lgraphColorNode(n.id,'unvisited');});
+  lgraphEdges.forEach(e=>e.state='normal');lgraphDrawEdges();lgraphUpdateDS([]);
+  explain('graph','Reset! Click RUN to start the traversal again.');
+}
+ 
+function lgraphBuildSteps(){
+  const n=lgraphNodes.length;
+  const adj={};lgraphNodes.forEach((_,i)=>adj[i]=[]);
+  lgraphEdges.forEach(e=>{adj[e.a].push({to:e.b,w:e.weight||1});adj[e.b].push({to:e.a,w:e.weight||1});});
+  if(lgraphAlgo==='dijkstra')return lgraphBuildDijkstra(adj,n);
+  const steps=[];const visited=new Array(n).fill(false);const isBFS=lgraphAlgo==='bfs';
+  if(isBFS){
+    const queue=[0];visited[0]=true;
+    steps.push({type:'init',node:0,ds:[0],explain:`<b>BFS Starting!</b> Node 0 enters the <b>Queue</b>. BFS works like ripples — all nodes at distance 1 first, then distance 2, and so on. <span class="hl-green">Queue = FIFO</span> ensures level-by-level exploration.`});
+    while(queue.length){
+      const cur=queue.shift();
+      steps.push({type:'visit',node:cur,ds:[...queue],explain:`<b>Dequeue node ${cur}</b> from the front of the Queue (FIFO). Visiting it now. I will check all its unvisited neighbours and add them to the <span class="hl-yellow">back of the Queue</span>.`});
+      const nbrs=adj[cur].filter(e=>!visited[e.to]);
+      if(!nbrs.length)steps.push({type:'nonbr',node:cur,ds:[...queue],explain:`Node ${cur} has no new neighbours. All connected nodes are already in the Queue or visited. Moving to the next node in the Queue.`,silent:true});
+      nbrs.forEach((e,ni)=>{
+        visited[e.to]=true;queue.push(e.to);
+        steps.push({type:'disc',node:cur,nb:e.to,ds:[...queue],explain:ni===0?`<span class="hl-green">Found node ${e.to}!</span> Added to the <b>back</b> of the Queue. It will NOT be visited right now — BFS processes all nodes at the current level first. This is why BFS guarantees the shortest path!`:`Node ${e.to} also found from node ${cur}. Added to Queue. Queue now has ${queue.length} node${queue.length!==1?'s':''}.`});
+      });
+      steps.push({type:'done',node:cur,ds:[...queue],explain:`Node ${cur} fully processed — painted green. All its neighbours are in the Queue.`,silent:true});
+    }
+    steps.push({type:'finish',explain:`<span class="hl-green">✅ BFS Complete!</span> Every reachable node was visited in level-by-level order. <b>Why does BFS guarantee shortest path?</b> Because we always process closer nodes first — the first time we reach any node, it is via the fewest edges.`});
+  }else{
+    const stack=[0];
+    steps.push({type:'init',node:0,ds:[0],explain:`<b>DFS Starting!</b> Node 0 pushed onto the <b>Stack</b>. DFS works like exploring a cave — pick one tunnel and walk all the way to the end before trying another. <span class="hl-purple">Stack = LIFO</span> ensures we always go deeper first.`});
+    while(stack.length){
+      const cur=stack.pop();
+      if(visited[cur]){steps.push({type:'skip',node:cur,ds:[...stack],explain:`Node ${cur} was already visited — skipping. In DFS, the same node can be pushed by multiple paths. This is normal.`,silent:true});continue;}
+      visited[cur]=true;
+      steps.push({type:'visit',node:cur,ds:[...stack],explain:`<b>Pop node ${cur}</b> from the top of the Stack. Visiting it now — DFS always dives to the most recently discovered node, which is why it goes <span class="hl-purple">deep</span> instead of wide.`});
+      const nbrs=[...adj[cur]].reverse().filter(e=>!visited[e.to]);
+      if(!nbrs.length)steps.push({type:'nonbr',node:cur,ds:[...stack],explain:`<span class="hl-yellow">Dead end at node ${cur}!</span> No unvisited neighbours. DFS <b>backtracks</b> — pops the stack and tries a different direction from an earlier node.`});
+      nbrs.forEach((e,ni)=>{
+        stack.push(e.to);
+        steps.push({type:'disc',node:cur,nb:e.to,ds:[...stack],explain:ni===0?`Node ${e.to} pushed to the <b>top</b> of the Stack. Since it is on top, it will be visited <b>NEXT</b> — this is exactly why DFS dives deep!`:`Node ${e.to} also pushed. It will be explored after node ${nbrs[0].to} when DFS backtracks.`});
+      });
+      steps.push({type:'done',node:cur,ds:[...stack],explain:`Node ${cur} complete — painted green.`,silent:true});
+    }
+    steps.push({type:'finish',explain:`<span class="hl-green">✅ DFS Complete!</span> Explored by diving as deep as possible before backtracking. <b>Unlike BFS, DFS does not guarantee shortest path</b> — but it is perfect for detecting cycles, finding all paths, and topological sorting.`});
+  }
+  return steps;
+}
+ 
+function lgraphBuildDijkstra(adj,n){
+  const INF=1e9;const dist=new Array(n).fill(INF);dist[0]=0;
+  const visited=new Array(n).fill(false);const pq=[{node:0,d:0}];const steps=[];
+  steps.push({type:'d-init',node:0,ds:['0:cost=0'],explain:`<b>Dijkstra Starting!</b> Distance to Node 0 = 0 (we start here). All others = ∞. The strategy: <span class="hl-yellow">always settle the cheapest unsettled node</span>. This greedy choice proves that settled distances are permanently optimal.`});
+  while(pq.length){
+    pq.sort((a,b)=>a.d-b.d);const{node:cur}=pq.shift();
+    if(visited[cur]){steps.push({type:'d-skip',node:cur,ds:pq.slice(0,8).map(x=>`${x.node}:${x.d}`),explain:`Node ${cur} already settled — skipping this stale queue entry.`,silent:true});continue;}
+    visited[cur]=true;
+    steps.push({type:'d-visit',node:cur,ds:pq.slice(0,8).map(x=>`${x.node}:${x.d}`),explain:`<b>Settling node ${cur}</b> with distance <span class="hl-green">${dist[cur]}</span>. This is now <b>FINAL</b> — no cheaper path to node ${cur} can exist. Why? Because all remaining paths through unsettled nodes can only cost more (no negative edges).`});
+    for(const{to,w}of(adj[cur]||[])){
+      if(visited[to])continue;
+      const nd=dist[cur]+w;
+      if(nd<dist[to]){
+        const old=dist[to];dist[to]=nd;pq.push({node:to,d:nd});
+        steps.push({type:'d-relax',node:cur,nb:to,ds:pq.slice(0,8).map(x=>`${x.node}:${x.d}`),explain:`<b>Relaxing</b> edge ${cur}→${to} (cost ${w}).<br>Via node ${cur}: ${dist[cur]} + ${w} = <span class="hl-green">${nd}</span>. Previous best: ${old>=INF?'∞':old}.<br><span class="hl-yellow">UPDATE!</span> ${nd} is cheaper. This is called <b>edge relaxation</b>.`});
+      }else{
+        steps.push({type:'d-norelax',node:cur,nb:to,ds:pq.slice(0,8).map(x=>`${x.node}:${x.d}`),explain:`Edge ${cur}→${to}: via node ${cur} costs ${nd}. Current best to ${to} is ${dist[to]}. No update — ${dist[to]} is already better.`,silent:true});
+      }
+    }
+  }
+  const distStr=dist.map((d,i)=>`${i}:${d>=INF?'∞':d}`).join('  ');
+  steps.push({type:'d-finish',explain:`<span class="hl-green">✅ Dijkstra Complete!</span><br>Final shortest distances from node 0:<br><b>${distStr}</b><br>Every distance is guaranteed optimal. This is exactly how GPS navigation works!`});
+  return steps;
+}
+ 
+function lgraphApplyStep(s){
+  const isStack=lgraphAlgo==='dfs';lgraphUpdateDS(s.ds||[],isStack);
+  if(!s.silent&&s.explain)explain('graph',s.explain);
+  if(s.explain&&!s.silent)llog('graph',s.explain.replace(/<[^>]+>/g,' ').trim().substring(0,80),'step');
+  const type=s.type;
+  if(type==='init'||type==='d-init'){lgraphColorNode(s.node,'start');}
+  else if(type==='visit'||type==='d-visit'){lgraphColorNode(s.node,'visiting');}
+  else if(type==='disc'||type==='d-relax'){
+    lgraphColorNode(s.nb,'inqueue');
+    const e=lgraphEdges.find(e=>(e.a===s.node&&e.b===s.nb)||(e.a===s.nb&&e.b===s.node));
+    if(e){e.state='traversed';lgraphDrawEdges();}
+  }
+  else if(type==='done'){lgraphColorNode(s.node,'visited');}
+  else if(type==='finish'||type==='d-finish'){
+    lgraphNodes.forEach((_,i)=>{if(lgraphNodes[i].el&&lgraphNodes[i].state!=='visited')lgraphColorNode(i,'visited');});
+    if(s.explain)explain('graph',s.explain);llog('graph','✅ Traversal complete!','ok');
+  }
+}
+ 
+function lgraphRun(){
+  if(lgraphRunning){lgraphRunning=false;clearTimeout(lgraphTimer);return;}
+  if(!lgraphSteps.length||lgraphIdx===0){
+    if(lgraphNodes.length<2){explain('graph','Need at least 2 nodes!');return;}
+    lgraphReset();lgraphSteps=lgraphBuildSteps();lgraphIdx=0;
+  }
+  lgraphRunning=true;explain('graph','Running...');
+  function next(){
+    if(!lgraphRunning||lgraphIdx>=lgraphSteps.length){lgraphRunning=false;return;}
+    const s=lgraphSteps[lgraphIdx++];lgraphApplyStep(s);
+    if(s.type==='finish'||s.type==='d-finish'){lgraphRunning=false;return;}
+    lgraphTimer=setTimeout(next,lgDelay());
+  }
+  next();
+}
+ 
+function lgraphStep(){
+  if(lgraphRunning)return;
+  if(!lgraphSteps.length||lgraphIdx===0){
+    if(lgraphNodes.length<2){explain('graph','Need at least 2 nodes!');return;}
+    lgraphReset();lgraphSteps=lgraphBuildSteps();lgraphIdx=0;
+  }
+  if(lgraphIdx>=lgraphSteps.length){explain('graph','Done! Click RESET to run again.');return;}
+  lgraphApplyStep(lgraphSteps[lgraphIdx++]);
+}
+</script>
+</body>
+</html>
