@@ -45,7 +45,7 @@ Designed to show the duality of Heaps (Array vs. Tree).
 ---
 
 ## 👨‍💻 Project Lead & Developer
-**Ananya Kulal** *Department of Computer Science & Engineering*
+**Ananya Kulal & Titiksha Arundadi** *Department of Computer Science & Engineering*
 
 ---
 
